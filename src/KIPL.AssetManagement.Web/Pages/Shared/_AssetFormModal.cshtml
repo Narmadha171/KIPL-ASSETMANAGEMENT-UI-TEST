@@ -1,0 +1,104 @@
+@using KIPL.AssetManagement.Application.Inventory
+@model AssetFormModalModel
+@{
+    var isEdit = Model.IsEdit;
+    var id = isEdit ? "editAsset" : "addAsset";
+}
+<div class="modal-overlay @(Model.OpenOnLoad ? "open" : "")" id="modal-@id">
+    <div class="modal">
+        <form method="post" asp-page-handler="@(isEdit ? "SaveAsset" : "AddAsset")">
+            <div class="modal-head">
+                <h3>@(isEdit ? "Edit asset" : "Add asset")</h3>
+                <button type="button" class="icon-btn" data-close-modal>✕</button>
+            </div>
+
+            <input type="hidden" name="Input.Id" data-input="assetid" value="@Model.Input.Id" />
+
+            <div class="modal-body">
+                <div asp-validation-summary="ModelOnly" class="field-error"></div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label>Asset type</label>
+                        <select name="Input.Category" data-input="category">
+                            @foreach (var value in Enum.GetValues<AssetCategory>())
+                            {
+                                <option value="@((int)value)" selected="@(Model.Input.Category == value)">
+                                    @DisplayHelpers.Label(value)
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Condition</label>
+                        <select name="Input.Condition" data-input="condition">
+                            @foreach (var value in Enum.GetValues<AssetCondition>())
+                            {
+                                <option value="@((int)value)" selected="@(Model.Input.Condition == value)">@value</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label>Asset tag</label>
+                        <input name="Input.Tag" class="mono" data-input="tag" value="@Model.Input.Tag"
+                               placeholder="@(isEdit ? "" : "Auto-generated on save")" />
+                    </div>
+                    <div class="field">
+                        <label>Serial number</label>
+                        <input name="Input.SerialNumber" class="mono" data-input="serial" value="@Model.Input.SerialNumber"
+                               placeholder="Manufacturer serial" />
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label>Brand</label>
+                        <input name="Input.Brand" data-input="brand" value="@Model.Input.Brand" placeholder="Dell" required />
+                    </div>
+                    <div class="field">
+                        <label>Model</label>
+                        <input name="Input.Model" data-input="model" value="@Model.Input.Model" placeholder="Latitude 5440" />
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label>Purchase date</label>
+                        <input name="Input.PurchaseDate" type="date" data-input="purchasedate"
+                               value="@(Model.Input.PurchaseDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                    <div class="field">
+                        <label>Price</label>
+                        <input name="Input.PurchaseCost" type="number" step="0.01" min="0" data-input="cost"
+                               value="@Model.Input.PurchaseCost" placeholder="0.00" />
+                    </div>
+                </div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label>Warranty until</label>
+                        <input name="Input.WarrantyExpiry" type="date" data-input="warranty"
+                               value="@(Model.Input.WarrantyExpiry?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                    <div class="field">
+                        <label>Location</label>
+                        <input name="Input.Location" data-input="location" value="@Model.Input.Location" placeholder="Head office" />
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Notes</label>
+                    <textarea name="Input.Notes" rows="2" data-input="notes">@Model.Input.Notes</textarea>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top:16px;">
+                <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                <button type="submit" class="btn btn-primary">@(isEdit ? "Save changes" : "Add asset")</button>
+            </div>
+        </form>
+    </div>
+</div>

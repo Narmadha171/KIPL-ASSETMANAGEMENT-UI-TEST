@@ -1,0 +1,141 @@
+@page
+@model KIPL.AssetManagement.Web.Pages.Me.DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var d = Model.Data;
+    var hour = DateTime.Now.Hour;
+    var greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    var firstName = d.DisplayName.Split(' ').FirstOrDefault() ?? d.DisplayName;
+    var awaitingReceipt = d.Requests.Where(r => r.Status == RequestStatus.Dispatched).ToList();
+}
+
+@section TopActions {
+    <a class="btn btn-outline btn-sm" asp-page="/Me/Returns">@Icons.Svg("undo", 15) Return an asset</a>
+    <a class="btn btn-primary btn-sm" asp-page="/Me/Requests">@Icons.Svg("plus", 15) Request an asset</a>
+}
+
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">@greeting, @firstName</h1>
+            <div class="page-sub">Here is what is assigned to you and what needs your attention.</div>
+        </div>
+    </div>
+
+    <div class="kpi-row">
+        <div class="kpi-card"><div class="kpi-badge tone-signal">@Icons.Svg("laptop", 15)</div><div class="num">@d.AssetsAssigned</div><div class="lbl">ASSETS ASSIGNED</div></div>
+        <div class="kpi-card"><div class="kpi-badge tone-signal">@Icons.Svg("search", 15)</div><div class="num">@d.OpenRequests</div><div class="lbl">OPEN REQUESTS</div></div>
+        <div class="kpi-card"><div class="kpi-badge tone-amber">@Icons.Svg("alert", 15)</div><div class="num">@d.PendingActions</div><div class="lbl">PENDING ACTIONS</div></div>
+        @if (Model.IsManager)
+        {
+            <a class="kpi-card" asp-page="/Team/Approvals" style="text-decoration:none; color:inherit;">
+                <div class="kpi-badge tone-amber">@Icons.Svg("checkcheck", 15)</div>
+                <div class="num">@d.TeamApprovals.Count</div>
+                <div class="lbl">TEAM APPROVALS</div>
+            </a>
+        }
+    </div>
+
+    @if (awaitingReceipt.Count > 0)
+    {
+        <div class="banner banner-action" style="margin-bottom:18px;">
+            <span>
+                @Icons.Svg("truck", 16)
+                <strong style="margin-left:6px;">@awaitingReceipt.Count item(s) on the way.</strong>
+                Confirm receipt once they arrive so inventory stays accurate.
+            </span>
+            <a class="btn btn-primary btn-sm" asp-page="/Me/Requests">Review</a>
+        </div>
+    }
+
+    <div class="two-col">
+        <div class="panel">
+            <div class="panel-head">
+                <h3>My assets</h3>
+                <a class="btn btn-outline btn-sm" asp-page="/Me/Assets">See all</a>
+            </div>
+
+            @if (d.Assets.Count == 0)
+            {
+                <partial name="_Empty" model="@("Nothing is assigned to you yet.")" />
+            }
+            else
+            {
+                <div class="asset-grid" style="padding:18px 20px;">
+                    @foreach (var a in d.Assets.Take(6))
+                    {
+                        <div class="asset-card">
+                            <div class="asset-icon">@DisplayHelpers.Emoji(a.Category)</div>
+                            <div class="asset-name">@a.Brand</div>
+                            <div style="margin-top:8px;"><span class="tag-chip">@a.Tag</span></div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="stack">
+            <div class="panel">
+                <div class="panel-head">
+                    <h3>My requests</h3>
+                    <a class="btn btn-outline btn-sm" asp-page="/Me/Requests">See all</a>
+                </div>
+
+                @if (d.Requests.Count == 0)
+                {
+                    <partial name="_Empty" model="@("You have not requested anything yet.")" />
+                }
+                else
+                {
+                    <table>
+                        <tbody>
+                        @foreach (var r in d.Requests.Take(5))
+                        {
+                            <tr class="data-row">
+                                <td>
+                                    <div style="font-weight:600;">@r.ItemName</div>
+                                    <div class="cell-muted" style="font-size:11.5px;">@DisplayHelpers.Relative(r.RaisedUtc)</div>
+                                </td>
+                                <td style="text-align:right;">
+                                    <span class="@DisplayHelpers.PillClass(r.Status)">@DisplayHelpers.Label(r.Status)</span>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h3>My returns</h3>
+                    <a class="btn btn-outline btn-sm" asp-page="/Me/Returns">See all</a>
+                </div>
+
+                @if (d.Returns.Count == 0)
+                {
+                    <partial name="_Empty" model="@("No returns in progress.")" />
+                }
+                else
+                {
+                    <table>
+                        <tbody>
+                        @foreach (var r in d.Returns.Take(5))
+                        {
+                            <tr class="data-row">
+                                <td>
+                                    <div style="font-weight:600;">@r.AssetName</div>
+                                    <div class="cell-muted mono" style="font-size:11.5px;">@r.Reference</div>
+                                </td>
+                                <td style="text-align:right;">
+                                    <span class="@DisplayHelpers.PillClass(r.Stage)">@DisplayHelpers.Label(r.Stage)</span>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>

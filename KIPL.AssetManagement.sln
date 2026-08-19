@@ -1,0 +1,119 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1000000-0000-0000-0000-000000000001}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{A1000000-0000-0000-0000-000000000002}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KIPL.AssetManagement.Domain", "src\KIPL.AssetManagement.Domain\KIPL.AssetManagement.Domain.csproj", "{B1000000-0000-0000-0000-000000000001}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KIPL.AssetManagement.Application", "src\KIPL.AssetManagement.Application\KIPL.AssetManagement.Application.csproj", "{B1000000-0000-0000-0000-000000000002}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KIPL.AssetManagement.Infrastructure", "src\KIPL.AssetManagement.Infrastructure\KIPL.AssetManagement.Infrastructure.csproj", "{B1000000-0000-0000-0000-000000000003}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KIPL.AssetManagement.Web", "src\KIPL.AssetManagement.Web\KIPL.AssetManagement.Web.csproj", "{B1000000-0000-0000-0000-000000000004}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KIPL.AssetManagement.UnitTests", "tests\KIPL.AssetManagement.UnitTests\KIPL.AssetManagement.UnitTests.csproj", "{B1000000-0000-0000-0000-000000000005}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KIPL.AssetManagement.UiTests", "tests\KIPL.AssetManagement.UiTests\KIPL.AssetManagement.UiTests.csproj", "{10B206B2-76CE-4310-ADE6-E85DD6C28ADA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B1000000-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000001}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000001}.Debug|x64.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000001}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000001}.Debug|x86.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000001}.Release|x64.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000001}.Release|x64.Build.0 = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000001}.Release|x86.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000001}.Release|x86.Build.0 = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000002}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000002}.Debug|x64.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000002}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000002}.Debug|x86.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000002}.Release|x64.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000002}.Release|x64.Build.0 = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000002}.Release|x86.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000002}.Release|x86.Build.0 = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000003}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000003}.Debug|x64.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000003}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000003}.Debug|x86.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000003}.Release|x64.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000003}.Release|x64.Build.0 = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000003}.Release|x86.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000003}.Release|x86.Build.0 = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000004}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000004}.Debug|x64.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000004}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000004}.Debug|x86.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000004}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000004}.Release|x64.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000004}.Release|x64.Build.0 = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000004}.Release|x86.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000004}.Release|x86.Build.0 = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000005}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000005}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000005}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000005}.Debug|x64.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000005}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000005}.Debug|x86.Build.0 = Debug|Any CPU
+		{B1000000-0000-0000-0000-000000000005}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000005}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000005}.Release|x64.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000005}.Release|x64.Build.0 = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000005}.Release|x86.ActiveCfg = Release|Any CPU
+		{B1000000-0000-0000-0000-000000000005}.Release|x86.Build.0 = Release|Any CPU
+		{10B206B2-76CE-4310-ADE6-E85DD6C28ADA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10B206B2-76CE-4310-ADE6-E85DD6C28ADA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10B206B2-76CE-4310-ADE6-E85DD6C28ADA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{10B206B2-76CE-4310-ADE6-E85DD6C28ADA}.Debug|x64.Build.0 = Debug|Any CPU
+		{10B206B2-76CE-4310-ADE6-E85DD6C28ADA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{10B206B2-76CE-4310-ADE6-E85DD6C28ADA}.Debug|x86.Build.0 = Debug|Any CPU
+		{10B206B2-76CE-4310-ADE6-E85DD6C28ADA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10B206B2-76CE-4310-ADE6-E85DD6C28ADA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10B206B2-76CE-4310-ADE6-E85DD6C28ADA}.Release|x64.ActiveCfg = Release|Any CPU
+		{10B206B2-76CE-4310-ADE6-E85DD6C28ADA}.Release|x64.Build.0 = Release|Any CPU
+		{10B206B2-76CE-4310-ADE6-E85DD6C28ADA}.Release|x86.ActiveCfg = Release|Any CPU
+		{10B206B2-76CE-4310-ADE6-E85DD6C28ADA}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B1000000-0000-0000-0000-000000000001} = {A1000000-0000-0000-0000-000000000001}
+		{B1000000-0000-0000-0000-000000000002} = {A1000000-0000-0000-0000-000000000001}
+		{B1000000-0000-0000-0000-000000000003} = {A1000000-0000-0000-0000-000000000001}
+		{B1000000-0000-0000-0000-000000000004} = {A1000000-0000-0000-0000-000000000001}
+		{B1000000-0000-0000-0000-000000000005} = {A1000000-0000-0000-0000-000000000002}
+		{10B206B2-76CE-4310-ADE6-E85DD6C28ADA} = {A1000000-0000-0000-0000-000000000002}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C1000000-0000-0000-0000-000000000000}
+	EndGlobalSection
+EndGlobal

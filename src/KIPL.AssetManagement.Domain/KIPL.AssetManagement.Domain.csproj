@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>KIPL.AssetManagement.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>

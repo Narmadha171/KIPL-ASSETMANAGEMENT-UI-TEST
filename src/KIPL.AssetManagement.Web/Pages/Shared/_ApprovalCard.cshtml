@@ -1,0 +1,65 @@
+@using KIPL.AssetManagement.Application.Requests
+@model ApprovalCardModel
+@{
+    var r = Model.Request;
+}
+<div class="panel" style="padding:20px; margin-bottom:14px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+        <div style="display:flex; gap:12px; align-items:center;">
+            <div class="avatar">@DisplayHelpers.Initials(r.RequesterName)</div>
+            <div>
+                <div style="font-weight:600; font-size:14px;">@r.RequesterName</div>
+            </div>
+        </div>
+        <span class="pill @(Model.NeedsAdmin ? "pill-signal" : "pill-amber")">
+            @(Model.NeedsAdmin ? "NEEDS ADMIN" : "PENDING")
+        </span>
+    </div>
+
+    <div style="font-weight:600; font-size:13.5px; margin-bottom:8px;">
+        @DisplayHelpers.Emoji(r.Category) @r.ItemName
+    </div>
+
+    <div style="background:var(--slate); border-radius:9px; padding:12px 14px; font-size:13px; color:var(--ink-soft); margin-bottom:14px;">
+        &ldquo;@r.Reason&rdquo;
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="cell-muted" style="font-size:12px;">📅 @r.RaisedUtc.ToLocalTime().ToString("d MMM yyyy")</span>
+
+        @if (Model.NeedsAdmin)
+        {
+            <span class="cell-muted" style="font-size:12.5px;">🔒 No action needed from you</span>
+        }
+        else
+        {
+            <div style="display:flex; gap:6px;">
+                @if (Model.CanApprove)
+                {
+                    <form method="post" asp-page-handler="Approve" style="margin:0;">
+                        <input type="hidden" name="requestId" value="@r.Id" />
+                        <button type="submit" class="btn btn-success btn-sm">✓ Approve</button>
+                    </form>
+                }
+                @if (Model.CanFulfil)
+                {
+                    <button type="button" class="btn btn-primary btn-sm"
+                            data-modal="fulfilRequest"
+                            data-requestid="@r.Id"
+                            data-requester="@r.RequesterName"
+                            data-initials="@DisplayHelpers.Initials(r.RequesterName)"
+                            data-item="@r.ItemName"
+                            data-reference="#REQ-@r.Id.ToString("D3")">👤 Assign</button>
+                }
+                @if (Model.CanApprove)
+                {
+                    <button type="button" class="btn btn-danger btn-sm"
+                            data-modal="rejectRequest"
+                            data-requestid="@r.Id"
+                            data-item="@r.ItemName"
+                            data-requester="@r.RequesterName">Reject</button>
+                }
+            </div>
+        }
+    </div>
+</div>

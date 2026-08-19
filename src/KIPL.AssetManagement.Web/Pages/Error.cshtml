@@ -1,0 +1,24 @@
+@page
+@model ErrorModel
+@{
+    ViewData["Title"] = "Something went wrong";
+}
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Something went wrong</h1>
+            <div class="page-sub">The action could not be completed.</div>
+        </div>
+    </div>
+    <div class="panel">
+        <div style="padding:34px 24px; text-align:center;">
+            @if (Model.ShowRequestId)
+            {
+                <div class="mono" style="font-size:12px; color:var(--ink-faint); margin-bottom:16px;">
+                    Request ID: @Model.RequestId
+                </div>
+            }
+            <a class="btn btn-primary" asp-page="/Index">Back to my dashboard</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,114 @@
+@page
+@model KIPL.AssetManagement.Web.Pages.Ops.RolesModel
+@{
+    ViewData["Title"] = "Roles and permissions";
+    var selected = Model.Matrix.FirstOrDefault(m => m.RoleName == Model.SelectedRole) ?? Model.Matrix.First();
+    var isAdminRole = selected.RoleName == Roles.Admin;
+}
+
+@section TopActions {
+    <button type="button" class="btn btn-primary btn-sm" data-modal="createRole">@Icons.Svg("plus", 15) Create role</button>
+}
+
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Roles and permissions</h1>
+            <div class="page-sub">
+                Changes take effect the next time the affected user signs in.
+                Administrator permissions are fixed so the system cannot lock itself out.
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="tabs">
+            @foreach (var role in Model.Matrix)
+            {
+                <a class="tab @(role.RoleName == selected.RoleName ? "active" : "")"
+                   asp-page="/Ops/Roles" asp-route-SelectedRole="@role.RoleName">
+                    @role.RoleName
+                    <span class="cell-muted" style="font-weight:500;">(@role.UserCount)</span>
+                </a>
+            }
+        </div>
+
+        @if (isAdminRole)
+        {
+            <div style="padding:16px 20px 0;">
+                <div class="banner banner-info">
+                    @Icons.Svg("lock", 15)
+                    <span>Administrators always hold every permission. This cannot be changed.</span>
+                </div>
+            </div>
+        }
+
+        <table>
+            <thead>
+            <tr>
+                <th>PERMISSION</th>
+                <th style="width:140px; text-align:right;">ACCESS</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var permission in Permissions.All)
+            {
+                var isGranted = selected.Permissions.TryGetValue(permission, out var g) && g;
+                <tr class="data-row">
+                    <td style="font-weight:600;">@DisplayHelpers.PermissionLabel(permission)</td>
+                    <td style="text-align:right;">
+                        @if (isAdminRole)
+                        {
+                            <span class="pill pill-success">Always</span>
+                        }
+                        else
+                        {
+                            <form method="post" asp-page-handler="Toggle" style="margin:0; display:inline;">
+                                <input type="hidden" name="roleName" value="@selected.RoleName" />
+                                <input type="hidden" name="permission" value="@permission" />
+                                <input type="hidden" name="granted" value="@((!isGranted).ToString().ToLowerInvariant())" />
+                                <input type="hidden" name="selectedRole" value="@selected.RoleName" />
+                                <button type="submit"
+                                        class="perm-switch @(isGranted ? "on" : "")"
+                                        title="@(isGranted ? "Click to revoke" : "Click to grant")"
+                                        aria-label="@DisplayHelpers.PermissionLabel(permission)"
+                                        aria-pressed="@(isGranted ? "true" : "false")">
+                                    <span class="knob"></span>
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Modals {
+    <div class="modal-overlay @(Model.ReopenCreateRole ? "open" : "")" id="modal-createRole">
+        <div class="modal" style="width:380px;">
+            <form method="post" asp-page-handler="CreateRole">
+                <div class="modal-head">
+                    <h3>Create role</h3>
+                    <button type="button" class="icon-btn" data-close-modal>✕</button>
+                </div>
+
+                <div asp-validation-summary="ModelOnly" class="field-error"></div>
+
+                <div class="field" style="margin-bottom:6px;">
+                    <label for="NewRoleName">Role name</label>
+                    <input id="NewRoleName" name="NewRoleName" value="@Model.NewRoleName" placeholder="e.g. Finance Reviewer" />
+                </div>
+                <div class="cell-muted" style="font-size:11.5px; margin-bottom:14px;">
+                    New roles start with no permissions granted — turn on what this role needs from the table below.
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create role</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

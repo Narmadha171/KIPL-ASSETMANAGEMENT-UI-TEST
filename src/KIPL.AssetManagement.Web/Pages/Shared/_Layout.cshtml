@@ -1,0 +1,121 @@
+@using System.Security.Claims
+@inject KIPL.AssetManagement.Application.Common.Interfaces.ICurrentUserService CurrentUser
+@inject KIPL.AssetManagement.Application.Notifications.INotificationService NotificationService
+@{
+    var role = CurrentUser.RoleName;
+    var displayName = CurrentUser.UserName ?? "Signed in";
+    var nav = Navigation.For(role, CurrentUser);
+    var currentPage = ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+    var notifications = await NotificationService.GetNotificationsAsync(CurrentUser);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — KIPL Asset Management</title>
+    <link rel="icon" href="~/favicon.ico" sizes="any" />
+    <link rel="icon" href="~/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
+</head>
+<body>
+<div class="app">
+
+    <aside class="rail" id="railNav">
+        <div class="rail-brand">
+            <div class="brand-mark">K</div>
+            <div>
+                <div class="brand-word">KIPL</div>
+                <div class="brand-sub">@Navigation.RailSubtitle(role)</div>
+            </div>
+        </div>
+
+        <nav class="rail-nav">
+            @foreach (var item in nav)
+            {
+                if (item.IsDivider)
+                {
+                    <div class="nav-divider"></div>
+                    continue;
+                }
+
+                var active = string.Equals(currentPage, item.Page, StringComparison.OrdinalIgnoreCase);
+
+                <a class="nav-item @(active ? "active" : "")" asp-page="@item.Page">
+                    @Icons.Svg(item.Icon, 17)
+                    <span>@item.Label</span>
+                </a>
+            }
+        </nav>
+
+        <div class="rail-foot">
+            <div class="avatar">@DisplayHelpers.Initials(displayName)</div>
+            <div style="flex:1; min-width:0;">
+                <div class="name">@displayName</div>
+                <div class="role">@role</div>
+            </div>
+            <form method="post" asp-page="/Account/Logout" style="margin:0;">
+                <button type="submit" class="icon-btn" title="Sign out">@Icons.Svg("logout", 16)</button>
+            </form>
+        </div>
+    </aside>
+
+    <div class="rail-backdrop" data-rail-backdrop></div>
+
+    <main class="main">
+        <header class="topbar">
+            <button type="button" class="nav-toggle" data-rail-toggle aria-label="Toggle navigation" aria-expanded="false" aria-controls="railNav">
+                @Icons.Svg("menu", 18)
+            </button>
+
+            <form class="search" method="get" asp-page="/Ops/Inventory">
+                @Icons.Svg("search", 16)
+                <input type="search" name="Search" placeholder="Search assets, people or tags…" aria-label="Search" />
+                <kbd class="search-kbd">Ctrl K</kbd>
+            </form>
+
+            <div class="top-actions">
+                @await RenderSectionAsync("TopActions", required: false)
+                <button type="button"
+                        class="icon-btn @(notifications.Any(n => n.IsUrgent) ? "has-notif" : "")"
+                        data-modal="notificationsModal"
+                        title="Notifications (@notifications.Count)"
+                        aria-label="Notifications"
+                        id="globalNotificationBtn">
+                    @Icons.Svg("bell", 17)
+                    @if (notifications.Count > 0)
+                    {
+                        <span class="dot @(notifications.Any(n => n.IsUrgent) ? "dot-pulse" : "")" id="topbarNotifDot"></span>
+                    }
+                </button>
+            </div>
+        </header>
+
+        <div class="content">
+            @RenderBody()
+        </div>
+    </main>
+</div>
+
+@await Html.PartialAsync("_NotificationsModal", notifications)
+@await RenderSectionAsync("Modals", required: false)
+
+@{
+    var successMessage = TempData["Success"] as string;
+    var errorMessage = TempData["Error"] as string;
+    var infoMessage = TempData["Info"] as string;
+    var openModalName = TempData["OpenModal"] as string;
+}
+<div id="toastStack"
+     data-success="@successMessage"
+     data-error="@errorMessage"
+     data-info="@infoMessage"
+     data-open-modal="@openModalName"></div>
+
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

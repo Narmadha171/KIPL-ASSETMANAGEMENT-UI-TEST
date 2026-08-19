@@ -1,0 +1,281 @@
+@using KIPL.AssetManagement.Application.Inventory
+@model ApprovalModalsModel
+
+@* ---------------------------------------------- Fulfil: choose a route *@
+<div class="modal-overlay" id="modal-fulfilRequest">
+    <div class="modal" style="width:440px;">
+        <div class="modal-head">
+            <div>
+                <h3>Fulfil request</h3>
+                <div class="cell-muted" style="font-size:11px; margin-top:2px;">Step 1 of 2 — choose how, then confirm the details.</div>
+            </div>
+            <button type="button" class="icon-btn" data-close-modal>✕</button>
+        </div>
+
+        <div class="modal-context">
+            <div class="avatar" data-field="initials">—</div>
+            <div>
+                <div style="font-weight:600; font-size:13px;" data-field="requester">—</div>
+                <div class="cell-muted" style="font-size:11.5px;">
+                    <span data-field="item">—</span> · <span data-field="reference"></span>
+                </div>
+            </div>
+        </div>
+
+        <div style="font-size:13px; color:var(--ink-soft); margin-bottom:10px;">
+            How do you want to fulfil this request?
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:8px;">
+            <button type="button" class="route-option primary" data-route="assign">
+                <span class="route-icon">📦</span>
+                <span style="flex:1;">
+                    <span style="font-weight:700; font-size:13px; display:block;">Assign from stock</span>
+                    <span class="cell-muted" style="font-size:11.5px;">Uses an available asset already in inventory</span>
+                </span>
+                <span style="color:var(--signal);">›</span>
+            </button>
+
+            <button type="button" class="route-option" data-route="order">
+                <span class="route-icon">🛒</span>
+                <span style="flex:1;">
+                    <span style="font-weight:700; font-size:13px; display:block;">Order online</span>
+                    <span class="cell-muted" style="font-size:11.5px;">Log an order shipped direct to the employee</span>
+                </span>
+                <span class="cell-muted">›</span>
+            </button>
+        </div>
+
+        <div class="cell-muted" style="font-size:11px; text-align:center;">
+            No stock available? Choose &lsquo;Order online&rsquo; to ship directly instead.
+        </div>
+    </div>
+</div>
+
+@* ------------------------------------------------ Assign from stock *@
+<div class="modal-overlay" id="modal-assignAsset">
+    <div class="modal">
+        <form method="post" asp-page-handler="Fulfil" enctype="multipart/form-data">
+            <div class="modal-head">
+                <div>
+                    <h3>Assign asset</h3>
+                    <div class="cell-muted" style="font-size:11px; margin-top:2px;">Step 2 of 2 — a printable delivery challan opens automatically once you submit.</div>
+                </div>
+                <button type="button" class="icon-btn" data-close-modal>✕</button>
+            </div>
+
+            <input type="hidden" name="RequestId" data-input="requestid" value="0" />
+
+            <div class="modal-context">
+                <div class="avatar" data-field="initials">—</div>
+                <div>
+                    <div style="font-weight:600; font-size:13px;" data-field="requester">—</div>
+                    <div class="cell-muted" style="font-size:11.5px;">
+                        <span data-field="item">—</span> · <span data-field="reference"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field" style="margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                    <label>Assets <span class="cell-muted" style="font-weight:500;">— select one or more</span></label>
+                </div>
+                <input type="search" placeholder="🔍 Filter by tag, type or model…"
+                       oninput="(function(v,l){l.querySelectorAll('.pick-row').forEach(function(r){r.style.display=r.dataset.search.toLowerCase().indexOf(v.toLowerCase())>=0?'':'none';});})(this.value, document.getElementById('assignPickList'))" />
+            </div>
+
+            <div class="pick-list" id="assignPickList">
+                @if (Model.AssignableAssets.Count == 0)
+                {
+                    <div style="padding:18px; text-align:center; font-size:12.5px; color:var(--ink-faint);">
+                        Nothing is in stock. Use &lsquo;Order online&rsquo; instead.
+                    </div>
+                }
+                else
+                {
+                    @foreach (var a in Model.AssignableAssets)
+                    {
+                        <label class="pick-row" data-search="@a.Tag @a.Brand @a.Category">
+                            <input type="checkbox" name="AssetIds" value="@a.Id" />
+                            <span class="mono" style="font-weight:600;">@a.Tag</span>
+                            <span style="flex:1;">@a.Brand</span>
+                            <span class="cell-muted">@a.Condition</span>
+                        </label>
+                    }
+                }
+            </div>
+
+            <div class="cell-muted" style="font-size:11px; margin:6px 0 10px;">
+                All selected items ship together on one delivery challan.
+            </div>
+
+            <div data-choice-scope>
+                <div class="field" style="margin:14px 0 4px;">
+                    <label>Delivery mode</label>
+                    <div class="choice-row" data-choice-group>
+                        <input type="hidden" name="Mode" value="@((int)FulfilmentMode.Courier)" />
+                        <div class="choice sel" data-value="@((int)FulfilmentMode.Courier)">🚚 Courier</div>
+                        <div class="choice" data-value="@((int)FulfilmentMode.Office)">🏢 Office</div>
+                    </div>
+                </div>
+
+                <div class="field" style="margin-top:10px;" data-when="@((int)FulfilmentMode.Courier)">
+                    <label for="assignCourier">Courier service</label>
+                    <input id="assignCourier" name="CourierService" placeholder="Blue Dart" />
+                </div>
+                <div class="field" style="margin-top:10px;" data-when="@((int)FulfilmentMode.Courier)">
+                    <label for="assignAwb">Tracking / AWB number</label>
+                    <input id="assignAwb" name="TrackingNumber" class="mono" placeholder="1Z999AA1…" />
+                </div>
+                <div class="field" style="margin-top:10px; display:none;" data-when="@((int)FulfilmentMode.Office)">
+                    <label for="assignPickup">Collection point</label>
+                    <input id="assignPickup" name="PickupPoint" placeholder="IT Desk, 2nd Floor" />
+                </div>
+            </div>
+
+            <div class="field" style="margin-top:12px;">
+                <label>Condition photo <span class="cell-muted" style="font-weight:500;">— optional</span></label>
+                <div class="dropzone" id="assignZone" data-for="assignPhoto" data-label="📷 Capture or attach a photo">
+                    📷 Capture or attach a photo
+                </div>
+                <input type="file" id="assignPhoto" name="Photo" accept="image/*" capture="environment"
+                       data-zone="assignZone" style="display:none;" />
+            </div>
+
+            <div class="modal-actions" style="margin-top:16px;">
+                <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                <button type="submit" class="btn btn-primary">Assign asset</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* --------------------------------------------------- Order online *@
+<div class="modal-overlay" id="modal-orderOnline">
+    <div class="modal">
+        <form method="post" asp-page-handler="Order">
+            <div class="modal-head">
+                <div>
+                    <h3>Order online</h3>
+                    <div class="cell-muted" style="font-size:11px; margin-top:2px;">Step 2 of 2 — HR will verify the delivery once it arrives.</div>
+                </div>
+                <button type="button" class="icon-btn" data-close-modal>✕</button>
+            </div>
+
+            <input type="hidden" name="requestId" data-input="requestid" value="0" />
+
+            <div class="modal-context">
+                <div class="avatar" data-field="initials">—</div>
+                <div>
+                    <div style="font-weight:600; font-size:13px;" data-field="requester">—</div>
+                    <div class="cell-muted" style="font-size:11.5px;" data-field="item">—</div>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div class="field">
+                    <label for="orderVendor">Vendor</label>
+                    <input id="orderVendor" name="vendor" placeholder="Amazon Business" required />
+                </div>
+                <div class="field">
+                    <label for="orderRef">Order reference</label>
+                    <input id="orderRef" name="orderId" class="mono" placeholder="171-2093847-5610" required />
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label for="orderBrand">Brand</label>
+                        <input id="orderBrand" name="brand" placeholder="Dell" />
+                    </div>
+                    <div class="field">
+                        <label for="orderModel">Model</label>
+                        <input id="orderModel" name="model" placeholder="U2723QE" />
+                    </div>
+                </div>
+                <div class="banner banner-info">
+                    @Icons.Svg("info", 15)
+                    <span>The item ships direct to the employee. HR verifies it on arrival before it enters inventory.</span>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top:16px;">
+                <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                <button type="submit" class="btn btn-primary">Log order</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* ------------------------------------------------------- Reject *@
+<div class="modal-overlay" id="modal-rejectRequest">
+    <div class="modal" style="width:400px;">
+        <form method="post" asp-page-handler="Reject">
+            <div class="modal-head">
+                <h3>Reject request</h3>
+                <button type="button" class="icon-btn" data-close-modal>✕</button>
+            </div>
+
+            <input type="hidden" name="requestId" data-input="requestid" value="0" />
+
+            <div class="modal-context">
+                <div class="avatar">!</div>
+                <div>
+                    <div style="font-weight:600; font-size:13px;" data-field="item">—</div>
+                    <div class="cell-muted" style="font-size:11.5px;">
+                        Requested by <span data-field="requester">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="rejectReason">Reason for rejection</label>
+                <textarea id="rejectReason" name="reason" rows="4" required
+                          placeholder="The requester sees this, so be specific."></textarea>
+            </div>
+
+            <div class="modal-actions" style="margin-top:16px;">
+                <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                <button type="submit" class="btn btn-danger">Reject request</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // The fulfil dialog is a router: pick a route, carry the row's data across.
+    (function () {
+        var fulfil = document.getElementById('modal-fulfilRequest');
+        if (!fulfil) return;
+
+        fulfil.addEventListener('click', function (event) {
+            var option = event.target.closest('[data-route]');
+            if (!option) return;
+
+            var target = option.getAttribute('data-route') === 'assign' ? 'assignAsset' : 'orderOnline';
+            var carry = ['requestid', 'requester', 'initials', 'item', 'reference'];
+            var next = document.getElementById('modal-' + target);
+
+            carry.forEach(function (key) {
+                var source = fulfil.querySelector('[data-field="' + key + '"]');
+                var value = source ? source.textContent : fulfil.querySelector('[data-input="' + key + '"]')?.value;
+                if (value === undefined || value === null) return;
+
+                next.querySelectorAll('[data-field="' + key + '"]').forEach(function (el) { el.textContent = value; });
+                next.querySelectorAll('[data-input="' + key + '"]').forEach(function (el) { el.value = value; });
+            });
+
+            closeModal();
+            openModal(target);
+        });
+
+        // requestid lives on the trigger, not in a visible field — stash it.
+        document.addEventListener('click', function (event) {
+            var trigger = event.target.closest('[data-modal="fulfilRequest"]');
+            if (!trigger) return;
+            fulfil.dataset.requestid = trigger.dataset.requestid;
+            ['assignAsset', 'orderOnline'].forEach(function (name) {
+                document.querySelectorAll('#modal-' + name + ' [data-input="requestid"]')
+                    .forEach(function (el) { el.value = trigger.dataset.requestid; });
+            });
+        });
+    })();
+</script>

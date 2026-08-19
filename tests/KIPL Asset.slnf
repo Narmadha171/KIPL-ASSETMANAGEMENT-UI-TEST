@@ -1,0 +1,13 @@
+{
+  "solution": {
+    "path": "..\\KIPL.AssetManagement.sln",
+    "projects": [
+      "src\\KIPL.AssetManagement.Application\\KIPL.AssetManagement.Application.csproj",
+      "src\\KIPL.AssetManagement.Domain\\KIPL.AssetManagement.Domain.csproj",
+      "src\\KIPL.AssetManagement.Infrastructure\\KIPL.AssetManagement.Infrastructure.csproj",
+      "src\\KIPL.AssetManagement.Web\\KIPL.AssetManagement.Web.csproj",
+      "tests\\KIPL.AssetManagement.UiTests\\KIPL.AssetManagement.UiTests.csproj",
+      "tests\\KIPL.AssetManagement.UnitTests\\KIPL.AssetManagement.UnitTests.csproj"
+    ]
+  }
+}

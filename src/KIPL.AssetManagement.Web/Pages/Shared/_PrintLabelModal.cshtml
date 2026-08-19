@@ -1,0 +1,37 @@
+@* Printable asset tag label — opened from any inventory row. *@
+<div class="modal-overlay" id="modal-printLabel">
+    <div class="modal" style="width:360px;">
+        <div class="modal-head no-print">
+            <h3>Print label</h3>
+            <button type="button" class="icon-btn" data-close-modal>✕</button>
+        </div>
+
+        <div id="labelPrintArea">
+            <div class="label-sheet">
+                <div class="label-brand">
+                    <div style="width:18px; height:18px; border-radius:4px; background:#1E4FD6; color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk'; font-weight:700; font-size:10px;">K</div>
+                    <div>
+                        <div style="font-family:'Space Grotesk'; font-weight:700; font-size:10px; line-height:1;">KIPL</div>
+                        <div style="font-size:6px; letter-spacing:.08em; color:#868DA0; font-weight:700;">ASSET MANAGEMENT</div>
+                    </div>
+                </div>
+
+                <div class="label-tag" data-field="tag">—</div>
+                <div class="label-meta">
+                    <span data-field="brand">—</span><br />
+                    <span data-field="category">—</span> · Property of Kaar Infotech Pvt Ltd
+                </div>
+                <div class="label-qr-wrap">
+                    <img class="label-qr" alt="QR code"
+                         data-src="tag"
+                         data-src-base="https://api.qrserver.com/v1/create-qr-code/?size=132x132&margin=0&data=" />
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-actions no-print" style="margin-top:16px;">
+            <button type="button" class="btn btn-outline" data-close-modal>Close</button>
+            <button type="button" class="btn btn-primary" onclick="window.print()">🖨 Print label</button>
+        </div>
+    </div>
+</div>

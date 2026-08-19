@@ -1,0 +1,70 @@
+@page
+@model KIPL.AssetManagement.Web.Pages.Team.AssetsModel
+@{
+    ViewData["Title"] = "Team assets";
+}
+
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Team assets</h1>
+            <div class="page-sub">@Model.TotalAssets asset(s) across @Model.Team.Count team member(s).</div>
+        </div>
+    </div>
+
+    @if (Model.Team.Count == 0)
+    {
+        <div class="panel">
+            <partial name="_Empty" model="@("Nobody currently reports to you.")" />
+        </div>
+    }
+    else
+    {
+        <div class="stack">
+            @foreach (var member in Model.Team)
+            {
+                <div class="panel">
+                    <div class="panel-head">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div class="avatar">@DisplayHelpers.Initials(member.Member.FullName)</div>
+                            <div>
+                                <h3>@member.Member.FullName</h3>
+                            </div>
+                        </div>
+                        <span class="pill pill-signal">@member.Assets.Count asset(s)</span>
+                    </div>
+
+                    @if (member.Assets.Count == 0)
+                    {
+                        <partial name="_Empty" model="@("No assets assigned.")" />
+                    }
+                    else
+                    {
+                        <table>
+                            <thead>
+                            <tr><th>ASSET</th><th>TAG</th><th>CATEGORY</th><th>CONDITION</th><th>STATUS</th></tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var a in member.Assets)
+                            {
+                                <tr class="data-row">
+                                    <td>
+                                        <div style="display:flex; align-items:center; gap:10px;">
+                                            <span style="font-size:18px;">@DisplayHelpers.Emoji(a.Category)</span>
+                                            <span style="font-weight:600;">@a.Brand</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="tag-chip">@a.Tag</span></td>
+                                    <td class="cell-muted">@DisplayHelpers.Label(a.Category)</td>
+                                    <td class="cell-muted">@a.Condition</td>
+                                    <td><span class="@DisplayHelpers.PillClass(a.Status)">@DisplayHelpers.Label(a.Status)</span></td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

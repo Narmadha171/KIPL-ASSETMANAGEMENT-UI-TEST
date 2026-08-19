@@ -1,0 +1,133 @@
+@using KIPL.AssetManagement.Application.Requests
+@using KIPL.AssetManagement.Domain.Enums
+@model ChallanDto
+@{
+    var c = Model;
+}
+<div class="modal-overlay" id="modal-deliveryChallan">
+    <div class="modal" style="width:auto; max-width:calc(210mm + 48px); padding:0; background:transparent; box-shadow:none;">
+        <div class="modal-head no-print" style="background:var(--paper); border-radius:var(--radius-xl) var(--radius-xl) 0 0; padding:18px 22px; margin:0;">
+            <div>
+                <h3>Delivery challan generated</h3>
+                <div class="cell-muted" style="font-size:11.5px; margin-top:4px;">Print or save a copy to accompany the shipment.</div>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <button type="button" class="btn btn-primary btn-sm" onclick="printChallan()">🖨 Print A4</button>
+                <button type="button" class="icon-btn" data-close-modal>✕</button>
+            </div>
+        </div>
+
+        <div id="challanPrintArea" style="background:var(--paper); border-radius:0 0 var(--radius-xl) var(--radius-xl); padding:22px;">
+            <div class="challan-sheet">
+                <div class="challan-head">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:9px;">
+                            <div style="width:26px; height:26px; border-radius:6px; background:#1E4FD6; color:#fff; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk'; font-weight:700; font-size:13px;">K</div>
+                            <div>
+                                <div style="font-family:'Space Grotesk'; font-weight:700; font-size:15px; line-height:1;">KIPL</div>
+                                <div style="font-size:8px; letter-spacing:.08em; color:#868DA0; font-weight:700;">ASSET MANAGEMENT</div>
+                            </div>
+                        </div>
+                        <div style="margin-top:8px; font-size:10px; color:#464C5C; max-width:62mm;">
+                            Kaar Infotech Pvt Ltd<br />123 Business Park, Bangalore 560001<br />Karnataka, India
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="challan-title">DELIVERY CHALLAN</div>
+                        <table class="challan-meta" style="margin-left:auto; margin-top:6px;">
+                            <tr><td>Challan No.</td><td style="font-family:'JetBrains Mono'; font-weight:600;">@c.ChallanNumber</td></tr>
+                            <tr><td>Date</td><td><b>@c.IssuedUtc.ToLocalTime().ToString("dd MMM yyyy")</b></td></tr>
+                            <tr><td>Time</td><td>@c.IssuedUtc.ToLocalTime().ToString("HH:mm")</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="challan-parties">
+                    <div class="challan-party">
+                        <h4>CONSIGNOR (FROM)</h4>
+                        <div style="font-weight:700; font-size:12px;">Kaar Infotech Pvt Ltd — IT Department</div>
+                        <div style="color:#464C5C; margin-top:3px;">123 Business Park, Bangalore 560001<br />Karnataka, India</div>
+                        <div style="margin-top:6px; color:#464C5C;">
+                            Issued by: <b style="color:#0C0E14;">@c.IssuedByName</b> (@c.IssuedByRole)
+                        </div>
+                    </div>
+                    <div class="challan-party">
+                        <h4>CONSIGNEE (TO)</h4>
+                        <div style="font-weight:700; font-size:12px;">@c.EmployeeName</div>
+                        <div style="color:#464C5C; margin-top:3px;">@c.EmployeeMeta</div>
+                        <div style="margin-top:6px; color:#464C5C;">Employee of Kaar Infotech Pvt Ltd</div>
+                    </div>
+                </div>
+
+                <table class="challan-table">
+                    <thead>
+                    <tr>
+                        <th style="width:9mm;">S.NO</th>
+                        <th>DESCRIPTION OF GOODS</th>
+                        <th style="width:34mm;">ASSET TAG</th>
+                        <th style="width:18mm; text-align:center;">QTY</th>
+                        <th style="width:26mm;">CONDITION</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @{ var index = 0; }
+                    @foreach (var item in c.Items)
+                    {
+                        index++;
+                        <tr>
+                            <td>@index</td>
+                            <td>
+                                <b>@item.Brand</b>
+                                <div style="color:#464C5C; font-size:10px; margin-top:2px;">@item.Category</div>
+                            </td>
+                            <td style="font-family:'JetBrains Mono'; font-weight:600;">@item.Tag</td>
+                            <td style="text-align:center;">1</td>
+                            <td>@item.Condition</td>
+                        </tr>
+                    }
+                    <tr>
+                        <td colspan="3" style="text-align:right; font-weight:700;">TOTAL QUANTITY</td>
+                        <td style="text-align:center; font-weight:700;">@c.Items.Count</td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <table class="challan-table" style="margin-top:10px;">
+                    <thead><tr><th colspan="2">TRANSPORT DETAILS</th></tr></thead>
+                    <tbody>
+                    @if (c.Mode == FulfilmentMode.Courier)
+                    {
+                        <tr><td style="color:#464C5C;">Mode of transport</td><td><b>Courier — @(c.CourierService ?? "—")</b></td></tr>
+                        <tr><td style="color:#464C5C;">Tracking / AWB no.</td><td style="font-family:'JetBrains Mono';">@(c.TrackingNumber ?? "—")</td></tr>
+                        <tr><td style="color:#464C5C;">Dispatched from</td><td>IT Department, KIPL Office</td></tr>
+                    }
+                    else
+                    {
+                        <tr><td style="color:#464C5C;">Mode of transport</td><td><b>Office handover</b></td></tr>
+                        <tr><td style="color:#464C5C;">Collection point</td><td>@(c.PickupPoint ?? "IT Desk, 2nd Floor, KIPL Office")</td></tr>
+                    }
+                    </tbody>
+                </table>
+
+                <div class="challan-note">
+                    <b>Declaration:</b> The goods described above are the property of Kaar Infotech Pvt Ltd and are being
+                    transferred for internal official use only. <b>NOT FOR SALE.</b> This delivery challan is issued under
+                    Rule 55 of the CGST Rules, 2017 for transportation of goods otherwise than by way of supply.
+                    The consignee is responsible for the safe custody of the asset until it is formally returned to the
+                    IT Department.
+                </div>
+
+                <div class="challan-sign">
+                    <div><h4>ISSUED BY (IT DEPARTMENT)</h4><div style="font-size:10px; color:#868DA0;">Name, signature &amp; date</div></div>
+                    <div><h4>RECEIVED IN GOOD CONDITION BY</h4><div style="font-size:10px; color:#868DA0;">Name, signature &amp; date</div></div>
+                </div>
+
+                <div class="challan-foot">
+                    <span>Computer-generated document — valid without signature when accompanied by proof of receipt in KIPL ITAM.</span>
+                    <span>@c.ChallanNumber</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

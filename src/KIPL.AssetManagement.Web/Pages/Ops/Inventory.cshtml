@@ -1,0 +1,334 @@
+@page
+@using KIPL.AssetManagement.Web.Pages.Shared
+@model KIPL.AssetManagement.Web.Pages.Ops.InventoryModel
+@{
+    ViewData["Title"] = "Inventory";
+    var c = Model.Counts;
+}
+
+@section TopActions {
+    @if (Model.CanManage)
+    {
+        <a class="btn btn-outline btn-sm" asp-page="/Ops/BulkImport">@Icons.Svg("upload", 15) Bulk import</a>
+        <button type="button" class="btn btn-primary btn-sm" data-modal="addAsset">@Icons.Svg("plus", 15) Add asset</button>
+    }
+}
+
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Inventory</h1>
+            <div class="page-sub">@c.Total assets tracked · @c.InStock available to assign</div>
+        </div>
+    </div>
+
+    <div class="kpi-row">
+        <a class="kpi-card" asp-page="/Ops/Inventory" asp-route-Status="@((int)AssetStatus.InStock)" style="text-decoration:none; color:inherit;">
+            <div class="kpi-badge tone-success">@Icons.Svg("boxopen", 15)</div><div class="num">@c.InStock</div><div class="lbl">IN STOCK</div>
+        </a>
+        <a class="kpi-card" asp-page="/Ops/Inventory" asp-route-Status="@((int)AssetStatus.Assigned)" style="text-decoration:none; color:inherit;">
+            <div class="kpi-badge tone-signal">@Icons.Svg("usercheck", 15)</div><div class="num">@c.Assigned</div><div class="lbl">ASSIGNED</div>
+        </a>
+        <a class="kpi-card" asp-page="/Ops/Inventory" asp-route-Status="@((int)AssetStatus.InTransit)" style="text-decoration:none; color:inherit;">
+            <div class="kpi-badge tone-amber">@Icons.Svg("truck", 15)</div><div class="num">@c.InTransit</div><div class="lbl">IN TRANSIT</div>
+        </a>
+        <a class="kpi-card" asp-page="/Ops/Inventory" asp-route-Status="@((int)AssetStatus.UnderService)" style="text-decoration:none; color:inherit;">
+            <div class="kpi-badge tone-amber">@Icons.Svg("wrench", 15)</div><div class="num">@c.UnderService</div><div class="lbl">UNDER SERVICE</div>
+        </a>
+        <a class="kpi-card" asp-page="/Ops/Inventory" asp-route-Status="@((int)AssetStatus.Retired)" style="text-decoration:none; color:inherit;">
+            <div class="kpi-badge tone-neutral">@Icons.Svg("archive", 15)</div><div class="num">@c.Retired</div><div class="lbl">RETIRED</div>
+        </a>
+        <a class="kpi-card" asp-page="/Ops/Inventory" asp-route-Status="@((int)AssetStatus.Lost)" style="text-decoration:none; color:inherit;">
+            <div class="kpi-badge tone-danger">@Icons.Svg("helpcircle", 15)</div><div class="num">@c.Lost</div><div class="lbl">LOST</div>
+        </a>
+    </div>
+
+    <div class="panel">
+        <form method="get" class="filter-bar">
+            <div class="field" style="flex:2;">
+                <label for="Search">Search</label>
+                <input id="Search" name="Search" value="@Model.Search" placeholder="Tag, brand, serial or holder" data-autosubmit />
+            </div>
+            <div class="field">
+                <label for="Category">Category</label>
+                <select id="Category" name="Category" data-autosubmit>
+                    <option value="">All categories</option>
+                    @foreach (var value in Enum.GetValues<AssetCategory>())
+                    {
+                        <option value="@((int)value)" selected="@(Model.Category == value)">@DisplayHelpers.Label(value)</option>
+                    }
+                </select>
+            </div>
+            <div class="field">
+                <label for="Status">Status</label>
+                <select id="Status" name="Status" data-autosubmit>
+                    <option value="">All statuses</option>
+                    @foreach (var value in Enum.GetValues<AssetStatus>())
+                    {
+                        <option value="@((int)value)" selected="@(Model.Status == value)">@DisplayHelpers.Label(value)</option>
+                    }
+                </select>
+            </div>
+            <div class="field">
+                <label for="Condition">Condition</label>
+                <select id="Condition" name="Condition" data-autosubmit>
+                    <option value="">Any condition</option>
+                    @foreach (var value in Enum.GetValues<AssetCondition>())
+                    {
+                        <option value="@((int)value)" selected="@(Model.Condition == value)">@value</option>
+                    }
+                </select>
+            </div>
+        </form>
+
+        @if (Model.Assets.TotalCount == 0)
+        {
+            <partial name="_Empty" model="@("No assets match those filters.")" />
+        }
+        else
+        {
+            <table>
+                <thead>
+                <tr>
+                    <th>TAG</th><th>CATEGORY</th><th>BRAND / MODEL</th><th>CONDITION</th>
+                    <th>STATUS</th><th>ASSIGNED TO</th><th style="text-align:right;">ACTIONS</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var a in Model.Assets.Items)
+                {
+                    <tr class="data-row">
+                        <td><span class="tag-chip">@a.Tag</span></td>
+                        <td class="cell-muted">@DisplayHelpers.Label(a.Category)</td>
+                        <td style="font-weight:600;">@a.Brand</td>
+                        <td class="cell-muted">@a.Condition</td>
+                        <td><span class="@DisplayHelpers.PillClass(a.Status)">@DisplayHelpers.Label(a.Status)</span></td>
+                        <td class="cell-muted">@a.AssignedToDisplay</td>
+                        <td>
+                            <div class="row-actions" style="gap:6px;">
+                                <button type="button" class="icon-btn" title="Details" data-modal="assetDetail-@a.Id">@Icons.Svg("eye", 15)</button>
+
+                                @if (Model.CanManage)
+                                {
+                                    <button type="button" class="icon-btn" title="Edit" data-modal="editAsset-@a.Id">@Icons.Svg("pencil", 15)</button>
+                                }
+
+                                <button type="button" class="icon-btn" title="Print label"
+                                        data-modal="printLabel"
+                                        data-tag="@a.Tag"
+                                        data-brand="@a.Brand"
+                                        data-category="@DisplayHelpers.Label(a.Category)">@Icons.Svg("tag", 15)</button>
+
+                                @if (Model.CanAssign && a.IsAssignable)
+                                {
+                                    <button type="button" class="icon-btn" title="Assign" style="color:var(--signal); border-color:var(--signal);"
+                                            data-modal="assignDirect"
+                                            data-assetid="@a.Id"
+                                            data-tag="@a.Tag"
+                                            data-brand="@a.Brand">@Icons.Svg("usercheck", 15)</button>
+                                }
+                                @if (Model.CanAssign && a.Status == AssetStatus.Assigned)
+                                {
+                                    <form method="post" asp-page-handler="Unassign" style="margin:0;"
+                                          data-confirm="Return @a.Tag to stock?">
+                                        <input type="hidden" name="assetId" value="@a.Id" />
+                                        <button type="submit" class="icon-btn" title="Return to stock">@Icons.Svg("swap", 15)</button>
+                                    </form>
+                                }
+                                @if (Model.CanRetire && a.Status != AssetStatus.Retired && a.Status != AssetStatus.Lost)
+                                {
+                                    <button type="button" class="icon-btn" title="Retire / lost" style="color:var(--danger);"
+                                            data-modal="retireOrLost"
+                                            data-assetid="@a.Id"
+                                            data-tag="@a.Tag"
+                                            data-brand="@a.Brand">@Icons.Svg("trash", 15)</button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+
+            <partial name="_Pager" model="@((Model.Assets.PageNumber, Model.Assets.TotalPages, Model.Assets.FirstRow, Model.Assets.LastRow, Model.Assets.TotalCount))" />
+        }
+    </div>
+</div>
+
+@section Modals {
+    <partial name="_PrintLabelModal" />
+
+    @{
+        ViewData["CanManage"] = Model.CanManage;
+        ViewData["CanRetire"] = Model.CanRetire;
+    }
+
+    @foreach (var a in Model.Assets.Items)
+    {
+        if (Model.Details.TryGetValue(a.Id, out var d))
+        {
+            <partial name="_AssetDetailModal" model="d" />
+            if (Model.CanManage)
+            {
+                <partial name="_EditAssetModal" model="@(new EditAssetModalModel(d, Model.ReopenModal == $"editAsset-{a.Id}"))" />
+            }
+        }
+    }
+
+    @if (Model.CanManage)
+    {
+        <partial name="_AssetFormModal"
+                 model="@(new AssetFormModalModel(Model.Input, false, Model.ReopenModal == "addAsset"))" />
+    }
+
+    @if (Model.Challan is not null)
+    {
+        <partial name="_ChallanModal" model="Model.Challan" />
+    }
+
+    @* ------------------------------------------ Assign straight from stock *@
+    <div class="modal-overlay" id="modal-assignDirect">
+        <div class="modal">
+            <form method="post" asp-page-handler="Assign" enctype="multipart/form-data">
+                <div class="modal-head">
+                    <div>
+                        <h3>Assign asset</h3>
+                        <div class="cell-muted" style="font-size:11px; margin-top:2px;">A printable delivery challan opens automatically once you submit.</div>
+                    </div>
+                    <button type="button" class="icon-btn" data-close-modal>✕</button>
+                </div>
+
+                <input type="hidden" name="assetId" data-input="assetid" value="0" />
+
+                <div class="modal-context">
+                    <div class="avatar">📦</div>
+                    <div>
+                        <div style="font-weight:600; font-size:13px;" data-field="brand">—</div>
+                        <div class="cell-muted mono" style="font-size:11.5px;" data-field="tag">—</div>
+                    </div>
+                </div>
+
+                <div class="modal-body">
+                    <div class="field" style="margin-bottom:8px;">
+                        <label>Assign to</label>
+                        <input type="search" placeholder="🔍 Search employees by name…"
+                               oninput="(function(v,l){l.querySelectorAll('.pick-row').forEach(function(r){r.style.display=r.dataset.search.toLowerCase().indexOf(v.toLowerCase())>=0?'':'none';});})(this.value, document.getElementById('assignEmployeeList'))" />
+                    </div>
+
+                    <div class="pick-list" id="assignEmployeeList" style="max-height:170px; overflow-y:auto;">
+                        @if (Model.Employees.Count == 0)
+                        {
+                            <div style="padding:18px; text-align:center; font-size:12.5px; color:var(--ink-faint);">
+                                No employees found.
+                            </div>
+                        }
+                        else
+                        {
+                            @foreach (var e in Model.Employees)
+                            {
+                                <label class="pick-row" data-search="@e.FullName">
+                                    <input type="radio" name="employeeId" value="@e.Id" required />
+                                    <span style="font-weight:600; flex:1;">@e.FullName</span>
+                                </label>
+                            }
+                        }
+                    </div>
+
+                    <div class="field">
+                        <label for="assignNotes">Note <span class="cell-muted" style="font-weight:500;">— optional</span></label>
+                        <input id="assignNotes" name="notes" placeholder="e.g. onboarding kit" />
+                    </div>
+
+                    <div data-choice-scope>
+                        <div class="field" style="margin:14px 0 4px;">
+                            <label>Delivery mode</label>
+                            <div class="choice-row" data-choice-group>
+                                <input type="hidden" name="mode" value="@((int)FulfilmentMode.Courier)" />
+                                <div class="choice sel" data-value="@((int)FulfilmentMode.Courier)">🚚 Courier</div>
+                                <div class="choice" data-value="@((int)FulfilmentMode.Office)">🏢 Office</div>
+                            </div>
+                        </div>
+
+                        <div class="field" style="margin-top:10px;" data-when="@((int)FulfilmentMode.Courier)">
+                            <label for="directCourier">Courier service</label>
+                            <input id="directCourier" name="courierService" placeholder="Blue Dart" />
+                        </div>
+                        <div class="field" style="margin-top:10px;" data-when="@((int)FulfilmentMode.Courier)">
+                            <label for="directAwb">Tracking / AWB number</label>
+                            <input id="directAwb" name="trackingNumber" class="mono" placeholder="1Z999AA1…" />
+                        </div>
+                        <div class="field" style="margin-top:10px; display:none;" data-when="@((int)FulfilmentMode.Office)">
+                            <label for="directPickup">Collection point</label>
+                            <input id="directPickup" name="pickupPoint" placeholder="IT Desk, 2nd Floor" />
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Condition photo <span class="cell-muted" style="font-weight:500;">— optional</span></label>
+                        <div class="dropzone" id="directZone" data-for="directPhoto" data-label="📷 Capture or attach a photo">
+                            📷 Capture or attach a photo
+                        </div>
+                        <input type="file" id="directPhoto" name="photo" accept="image/*" capture="environment"
+                               data-zone="directZone" style="display:none;" />
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="margin-top:16px;">
+                    <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-primary">Assign asset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @* ------------------------------------------------ Retire or report lost *@
+    <div class="modal-overlay" id="modal-retireOrLost">
+        <div class="modal" style="width:420px;">
+            <div class="modal-head">
+                <h3>Retire or report lost</h3>
+                <button type="button" class="icon-btn" data-close-modal>✕</button>
+            </div>
+
+            <div class="modal-context">
+                <div class="avatar">⚠️</div>
+                <div>
+                    <div style="font-weight:600; font-size:13px;" data-field="brand">—</div>
+                    <div class="cell-muted mono" style="font-size:11.5px;" data-field="tag">—</div>
+                </div>
+            </div>
+
+            <form method="post" asp-page-handler="Retire" data-confirm="Retire this asset permanently?" style="margin-bottom:14px;">
+                <input type="hidden" name="assetId" data-input="assetid" value="0" />
+                <div class="field">
+                    <label for="retireReason">Retire — reason</label>
+                    <input id="retireReason" name="reason" placeholder="End of life" />
+                </div>
+                <button type="submit" class="btn btn-danger btn-sm" style="margin-top:10px; width:100%; justify-content:center;">
+                    Retire asset
+                </button>
+            </form>
+
+            <form method="post" asp-page-handler="ReportLost" data-confirm="Mark this asset as lost?" style="margin-bottom:14px;">
+                <input type="hidden" name="assetId" data-input="assetid" value="0" />
+                <div class="field">
+                    <label for="lostWith">Report lost — last seen with</label>
+                    <input id="lostWith" name="lastSeenWith" placeholder="Name" />
+                </div>
+                <button type="submit" class="btn btn-outline btn-sm" style="margin-top:10px; width:100%; justify-content:center;">
+                    Report lost
+                </button>
+            </form>
+
+            <form method="post" asp-page-handler="Service">
+                <input type="hidden" name="assetId" data-input="assetid" value="0" />
+                <button type="submit" class="btn btn-outline btn-sm" style="width:100%; justify-content:center;">
+                    Send to service
+                </button>
+            </form>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

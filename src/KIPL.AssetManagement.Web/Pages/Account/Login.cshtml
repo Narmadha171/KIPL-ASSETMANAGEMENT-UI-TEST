@@ -1,0 +1,74 @@
+@page
+@model KIPL.AssetManagement.Web.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Sign in";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign in — KIPL Asset Management</title>
+    <link rel="icon" href="~/favicon.ico" sizes="any" />
+    <link rel="icon" href="~/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
+</head>
+<body>
+<div class="auth-shell">
+    <div class="auth-card">
+        <div class="auth-brand">
+            <div class="brand-mark">K</div>
+            <div>
+                <div class="brand-word">KIPL</div>
+                <div class="brand-sub">ASSET MANAGEMENT</div>
+            </div>
+        </div>
+
+        <h1 class="page-title" style="font-size:19px; margin-bottom:4px;">Sign in</h1>
+        <div class="page-sub" style="margin-bottom:20px;">Use your work email address.</div>
+
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="validation-summary field-error"></div>
+
+            <div class="field" style="margin-bottom:14px;">
+                <label asp-for="Input.Email">Email</label>
+                <input asp-for="Input.Email" id="Input_Email" autocomplete="username" />
+                <span asp-validation-for="Input.Email" class="field-error"></span>
+            </div>
+
+            <div class="field" style="margin-bottom:18px;">
+                <label asp-for="Input.Password">Password</label>
+                <input asp-for="Input.Password" id="Input_Password" type="password" autocomplete="current-password" />
+                <span asp-validation-for="Input.Password" class="field-error"></span>
+            </div>
+
+            <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; margin-bottom:18px;">
+                <input asp-for="Input.RememberMe" type="checkbox" style="width:auto;" />
+                <span>Keep me signed in</span>
+            </label>
+
+            <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Sign in</button>
+        </form>
+
+        <div class="demo-accounts">
+            <div style="font-weight:700; color:var(--ink-soft); margin-bottom:8px;">Demo accounts — click to fill</div>
+            @foreach (var account in Model.DemoAccounts)
+            {
+                <div>
+                    <button type="button" data-demo-email="@account.Email" data-demo-password="@LoginModel.DemoPassword">
+                        @account.Role — @account.Email
+                    </button>
+                </div>
+            }
+            <div style="margin-top:8px;">Password for all demo accounts: <span class="mono">@LoginModel.DemoPassword</span></div>
+        </div>
+    </div>
+</div>
+<script src="~/js/site.js" asp-append-version="true"></script>
+<partial name="_ValidationScriptsPartial" />
+</body>
+</html>

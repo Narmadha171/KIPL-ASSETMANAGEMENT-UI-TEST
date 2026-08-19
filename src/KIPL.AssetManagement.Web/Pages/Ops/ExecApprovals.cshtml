@@ -1,0 +1,94 @@
+@page
+@using KIPL.AssetManagement.Web.Pages.Shared
+@model KIPL.AssetManagement.Web.Pages.Ops.ExecApprovalsModel
+@{
+    ViewData["Title"] = "Approvals";
+    var c = Model.Counts;
+}
+
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Approvals</h1>
+        </div>
+    </div>
+
+    <div class="kpi-row">
+        <div class="kpi-card"><div class="kpi-badge tone-amber">@Icons.Svg("alert", 15)</div><div class="num">@c.Unclaimed</div><div class="lbl">UNCLAIMED</div></div>
+        <div class="kpi-card"><div class="kpi-badge tone-signal">@Icons.Svg("boxopen", 15)</div><div class="num">@c.Claimed</div><div class="lbl">CLAIMED</div></div>
+        <div class="kpi-card"><div class="kpi-badge tone-signal">@Icons.Svg("cart", 15)</div><div class="num">@c.OnlineOrders</div><div class="lbl">ONLINE ORDERS</div></div>
+        <div class="kpi-card"><div class="kpi-badge tone-signal">@Icons.Svg("truck", 15)</div><div class="num">@c.Dispatched</div><div class="lbl">DISPATCHED</div></div>
+        <div class="kpi-card"><div class="kpi-badge tone-amber">@Icons.Svg("clock", 15)</div><div class="num">@c.Pending</div><div class="lbl">AWAITING APPROVAL</div></div>
+        <div class="kpi-card"><div class="kpi-badge tone-success">@Icons.Svg("checkcheck", 15)</div><div class="num">@c.CompletedThisMonth</div><div class="lbl">COMPLETED THIS MONTH</div></div>
+    </div>
+
+    @{
+        // IT doesn't approve/reject here — that's HR's job. Anything on this page, whether
+        // it's still waiting on HR or already cleared, goes straight into one "Ready to
+        // fulfil" list. Assigning a not-yet-approved item approves it as part of the same
+        // click (AssetRequestService auto-approves on fulfil), so IT never sees a separate
+        // approval step at all.
+        var toFulfil = Model.Pending.Concat(Model.ToFulfil).OrderBy(r => r.RaisedUtc).ToList();
+    }
+
+    <h3 style="font-size:14px; margin-bottom:10px;">Ready to fulfil</h3>
+
+    @if (toFulfil.Count == 0)
+    {
+        <div class="panel" style="text-align:center; padding:28px; color:var(--ink-faint); font-size:13px;">
+            Nothing is waiting on assignment.
+        </div>
+    }
+    else
+    {
+        <div class="panel" style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Requester</th>
+                        <th>Status</th>
+                        <th>Approved by</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in toFulfil)
+                    {
+                        var assignable = r.Status is RequestStatus.Pending or RequestStatus.PendingHrApproval or RequestStatus.Unclaimed;
+                        <tr class="data-row">
+                            <td>@DisplayHelpers.Emoji(r.Category) @r.ItemName</td>
+                            <td>@r.RequesterName</td>
+                            <td><span class="@DisplayHelpers.PillClass(r.Status)">@DisplayHelpers.Label(r.Status)</span></td>
+                            <td class="cell-muted">@(r.ApprovedByName ?? "—")</td>
+                            <td style="text-align:right;">
+                                @if (Model.CanFulfil && assignable)
+                                {
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                            data-modal="fulfilRequest"
+                                            data-requestid="@r.Id"
+                                            data-requester="@r.RequesterName"
+                                            data-initials="@DisplayHelpers.Initials(r.RequesterName)"
+                                            data-item="@r.ItemName"
+                                            data-reference="#REQ-@r.Id.ToString("D3")">👤 Assign</button>
+                                }
+                                else
+                                {
+                                    <span class="cell-muted" style="font-size:12px;">In progress</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Modals {
+    <partial name="_ApprovalModals" model="@(new ApprovalModalsModel(Model.AssignableAssets))" />
+    @if (Model.Challan is not null)
+    {
+        <partial name="_ChallanModal" model="Model.Challan" />
+    }
+}

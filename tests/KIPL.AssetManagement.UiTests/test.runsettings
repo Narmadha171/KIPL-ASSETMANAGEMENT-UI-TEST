@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <Playwright>
+    <BrowserName>chromium</BrowserName>
+    <LaunchOptions>
+      <!-- Direct Playwright to use locally installed Google Chrome. Change to "msedge" for Microsoft Edge -->
+      <Channel>chrome</Channel>
+      <!-- Visible browser window -->
+      <Headless>false</Headless>
+      <!-- 250ms delay so humans can watch but it doesn't take forever -->
+      <SlowMo>550</SlowMo>
+    </LaunchOptions>
+  </Playwright>
+</RunSettings>

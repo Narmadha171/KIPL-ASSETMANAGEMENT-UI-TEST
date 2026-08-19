@@ -1,0 +1,196 @@
+@page
+@model KIPL.AssetManagement.Web.Pages.Ops.DashboardModel
+@using static KIPL.AssetManagement.Web.Pages.Ops.DashboardModel
+@{
+    ViewData["Title"] = "Operations overview";
+    var d = Model.Data;
+    var openReturns = d.Returns.AwaitingPickup + d.Returns.InTransit + d.Returns.AwaitingInspection;
+}
+
+@section TopActions {
+    <a class="btn btn-outline btn-sm" asp-page="/Ops/BulkImport">@Icons.Svg("upload", 15) Bulk import</a>
+    <a class="btn btn-primary btn-sm" asp-page="/Ops/Inventory">@Icons.Svg("plus", 15) Add asset</a>
+}
+
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Operations overview</h1>
+            <div class="page-sub">Everything waiting on the IT asset team right now.</div>
+        </div>
+
+        <div class="stat-strip">
+            <div class="stat-cell"><div class="label">TOTAL ASSETS</div><div class="value">@d.Inventory.Total</div></div>
+            <div class="stat-cell"><div class="label">ASSIGNED</div><div class="value">@d.Inventory.Assigned</div></div>
+            <div class="stat-cell"><div class="label">RETURNS OPEN</div><div class="value">@openReturns</div></div>
+            <div class="stat-cell"><div class="label">COMPLETED THIS MONTH</div><div class="value">@d.Requests.CompletedThisMonth</div></div>
+        </div>
+    </div>
+
+    <div class="kpi-row">
+        <a class="kpi-card" asp-page="/Ops/HrApprovals" style="text-decoration:none; color:inherit;">
+            <div class="kpi-badge tone-amber">@Icons.Svg("clock", 15)</div>
+            <div class="num">@d.Requests.Pending</div><div class="lbl">PENDING APPROVAL</div>
+        </a>
+        <a class="kpi-card" asp-page="/Ops/ExecApprovals" style="text-decoration:none; color:inherit;">
+            <div class="kpi-badge tone-amber">@Icons.Svg("alert", 15)</div>
+            <div class="num">@d.Requests.Unclaimed</div><div class="lbl">UNCLAIMED</div>
+        </a>
+        <a class="kpi-card" asp-page="/Ops/ExecApprovals" style="text-decoration:none; color:inherit;">
+            <div class="kpi-badge tone-signal">@Icons.Svg("truck", 15)</div>
+            <div class="num">@d.Requests.Dispatched</div><div class="lbl">IN FULFILMENT</div>
+        </a>
+        <a class="kpi-card" asp-page="/Ops/Inventory" asp-route-Status="@((int)AssetStatus.InStock)" style="text-decoration:none; color:inherit;">
+            <div class="kpi-badge tone-success">@Icons.Svg("boxopen", 15)</div>
+            <div class="num">@d.Inventory.InStock</div><div class="lbl">IN STOCK</div>
+        </a>
+        <a class="kpi-card" asp-page="/Ops/ServiceQueue" style="text-decoration:none; color:inherit;">
+            <div class="kpi-badge tone-signal">@Icons.Svg("wrench", 15)</div>
+            <div class="num">@d.OpenServiceRequests</div><div class="lbl">SERVICE</div>
+        </a>
+        <a class="kpi-card" asp-page="/Ops/Inventory" asp-route-Status="@((int)AssetStatus.Lost)" style="text-decoration:none; color:inherit;">
+            <div class="kpi-badge tone-danger">@Icons.Svg("helpcircle", 15)</div>
+            <div class="num">@d.Inventory.Lost</div><div class="lbl">LOST</div>
+        </a>
+    </div>
+
+    <div class="panel">
+        <div class="tabs">
+            <a class="tab @(Model.Tab == DashTab.Requests ? "active" : "")" asp-page="/Ops/Dashboard" asp-route-Tab="@DashTab.Requests">Open requests</a>
+            <a class="tab @(Model.Tab == DashTab.Returns ? "active" : "")" asp-page="/Ops/Dashboard" asp-route-Tab="@DashTab.Returns">Returns</a>
+            <a class="tab @(Model.Tab == DashTab.Service ? "active" : "")" asp-page="/Ops/Dashboard" asp-route-Tab="@DashTab.Service">Service queue</a>
+            <a class="tab @(Model.Tab == DashTab.Activity ? "active" : "")" asp-page="/Ops/Dashboard" asp-route-Tab="@DashTab.Activity">Recent activity</a>
+        </div>
+
+        @if (Model.Tab == DashTab.Requests)
+        {
+            @if (Model.RequestRows.Count == 0)
+            {
+                <partial name="_Empty" model="@("Nothing is waiting — the queue is clear.")" />
+            }
+            else
+            {
+                <table>
+                    <thead>
+                    <tr>
+                        <th><a href="@Model.SortLink("requester")">REQUESTER <span class="sort-arrow">@Model.SortArrow("requester")</span></a></th>
+                        <th><a href="@Model.SortLink("item")">ITEM <span class="sort-arrow">@Model.SortArrow("item")</span></a></th>
+                        <th><a href="@Model.SortLink("status")">STATUS <span class="sort-arrow">@Model.SortArrow("status")</span></a></th>
+                        <th><a href="@Model.SortLink("raised")">RAISED <span class="sort-arrow">@Model.SortArrow("raised")</span></a></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var r in Model.RequestRows)
+                    {
+                        <tr class="data-row">
+                            <td>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div class="avatar">@DisplayHelpers.Initials(r.RequesterName)</div>
+                                    <div>
+                                        <div style="font-weight:600;">@r.RequesterName</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@DisplayHelpers.Emoji(r.Category) @r.ItemName</td>
+                            <td><span class="@DisplayHelpers.PillClass(r.Status)">@DisplayHelpers.Label(r.Status)</span></td>
+                            <td class="cell-muted">@DisplayHelpers.Relative(r.RaisedUtc)</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+        }
+        else if (Model.Tab == DashTab.Returns)
+        {
+            @if (Model.ReturnRows.Count == 0)
+            {
+                <partial name="_Empty" model="@("No returns in flight.")" />
+            }
+            else
+            {
+                <table>
+                    <thead>
+                    <tr>
+                        <th><a href="@Model.SortLink("reference")">REFERENCE <span class="sort-arrow">@Model.SortArrow("reference")</span></a></th>
+                        <th><a href="@Model.SortLink("requester")">EMPLOYEE <span class="sort-arrow">@Model.SortArrow("requester")</span></a></th>
+                        <th><a href="@Model.SortLink("asset")">ASSET <span class="sort-arrow">@Model.SortArrow("asset")</span></a></th>
+                        <th><a href="@Model.SortLink("status")">STAGE <span class="sort-arrow">@Model.SortArrow("status")</span></a></th>
+                        <th><a href="@Model.SortLink("raised")">RAISED <span class="sort-arrow">@Model.SortArrow("raised")</span></a></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var r in Model.ReturnRows)
+                    {
+                        <tr class="data-row">
+                            <td class="mono" style="font-weight:600;">@r.Reference</td>
+                            <td>@r.EmployeeName</td>
+                            <td>@r.AssetName <span class="tag-chip" style="margin-left:6px;">@r.AssetTag</span></td>
+                            <td><span class="@DisplayHelpers.PillClass(r.Stage)">@DisplayHelpers.Label(r.Stage)</span></td>
+                            <td class="cell-muted">@DisplayHelpers.Relative(r.RaisedUtc)</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+        }
+        else if (Model.Tab == DashTab.Service)
+        {
+            @if (Model.ServiceRows.Count == 0)
+            {
+                <partial name="_Empty" model="@("Nothing in the service queue.")" />
+            }
+            else
+            {
+                <table>
+                    <thead>
+                    <tr>
+                        <th><a href="@Model.SortLink("reference")">REF <span class="sort-arrow">@Model.SortArrow("reference")</span></a></th>
+                        <th><a href="@Model.SortLink("asset")">ASSET <span class="sort-arrow">@Model.SortArrow("asset")</span></a></th>
+                        <th>REPORTED BY</th>
+                        <th><a href="@Model.SortLink("urgency")">URGENCY <span class="sort-arrow">@Model.SortArrow("urgency")</span></a></th>
+                        <th><a href="@Model.SortLink("status")">STATUS <span class="sort-arrow">@Model.SortArrow("status")</span></a></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var s in Model.ServiceRows)
+                    {
+                        <tr class="data-row">
+                            <td class="mono" style="font-weight:600;">@s.Reference</td>
+                            <td>@s.AssetName <span class="tag-chip" style="margin-left:6px;">@s.AssetTag</span></td>
+                            <td>@s.ReporterName</td>
+                            <td><span class="@DisplayHelpers.PillClass(s.Urgency)">@DisplayHelpers.Label(s.Urgency)</span></td>
+                            <td class="cell-muted">@s.Status</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+        }
+        else
+        {
+            <table>
+                <thead>
+                <tr><th>WHEN</th><th>WHO</th><th>ROLE</th><th>ACTION</th><th>ENTITY</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var a in Model.ActivityRows)
+                {
+                    <tr class="data-row">
+                        <td class="cell-muted" title="@a.TimestampUtc.ToString("u")">@DisplayHelpers.Relative(a.TimestampUtc)</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div class="avatar" style="width:26px; height:26px; font-size:10px;">@DisplayHelpers.Initials(a.UserName)</div>
+                                <span style="font-weight:600;">@a.UserName</span>
+                            </div>
+                        </td>
+                        <td class="cell-muted">@a.RoleName</td>
+                        <td>@a.Action</td>
+                        <td class="mono">@a.Entity</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+
+</div>
