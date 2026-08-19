@@ -1,0 +1,90 @@
+@* HR checks in an online order before it becomes a real inventory asset. *@
+<div class="modal-overlay" id="modal-verifySubmission">
+    <div class="modal" style="width:440px;">
+        <form method="post" asp-page-handler="Verify" enctype="multipart/form-data" data-gate>
+            <div class="modal-head">
+                <h3>Verify submission</h3>
+                <button type="button" class="icon-btn" data-close-modal>✕</button>
+            </div>
+
+            <input type="hidden" name="RequestId" data-input="requestid" value="0" />
+
+            <div class="modal-context">
+                <div class="avatar" data-field="initials">—</div>
+                <div>
+                    <div style="font-weight:600; font-size:13px;" data-field="requester">—</div>
+                    <div class="cell-muted" style="font-size:11.5px;">
+                        <span data-field="item">—</span> · Order <span data-field="orderid">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div class="banner banner-info">
+                    @Icons.Svg("info", 15)
+                    <span>Check the item against the order before it enters inventory.</span>
+                </div>
+
+                <div class="field">
+                    <label for="verifySerial">Manufacturer serial number</label>
+                    <input id="verifySerial" name="SerialNumber" class="mono" required data-gate-required
+                           placeholder="Read it off the device or the box" />
+                </div>
+
+                <div class="field">
+                    <label for="verifyTag">Asset tag to apply</label>
+                    <input id="verifyTag" name="AssetTag" class="mono"
+                           placeholder="Leave blank to generate one" />
+                </div>
+
+                <label style="display:flex; align-items:flex-start; gap:9px; font-size:12.5px; cursor:pointer;">
+                    <input type="checkbox" id="verifyMismatch" name="TagMismatch" value="true"
+                           style="width:auto; margin-top:2px;" />
+                    <span>
+                        <strong>The delivered item does not match the order.</strong>
+                        <span class="cell-muted" style="display:block; font-size:11.5px;">
+                            Wrong model, damaged packaging, missing accessories…
+                        </span>
+                    </span>
+                </label>
+
+                <div class="field" id="verifyMismatchWrap" style="display:none;">
+                    <label for="verifyMismatchNote">What is wrong?</label>
+                    <textarea id="verifyMismatchNote" name="MismatchNote" rows="3"
+                              placeholder="Describe the discrepancy so IT can raise it with the vendor."></textarea>
+                </div>
+
+                <div class="field">
+                    <label>Photo of the delivered item</label>
+                    <div class="dropzone" id="verifyZone" data-for="verifyPhoto" data-label="📷 Capture or attach a photo">
+                        📷 Capture or attach a photo
+                    </div>
+                    <input type="file" id="verifyPhoto" name="Photo" accept="image/*" capture="environment"
+                           data-zone="verifyZone" style="display:none;" />
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top:16px;">
+                <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                <button type="submit" class="btn btn-primary" data-gate-target disabled>Verify and add to inventory</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var mismatch = document.getElementById('verifyMismatch');
+        var wrap = document.getElementById('verifyMismatchWrap');
+        var note = document.getElementById('verifyMismatchNote');
+        if (!mismatch) return;
+
+        mismatch.addEventListener('change', function () {
+            wrap.style.display = mismatch.checked ? '' : 'none';
+            // A mismatch must be explained before the form will submit.
+            if (mismatch.checked) note.setAttribute('data-gate-required', '');
+            else note.removeAttribute('data-gate-required');
+            document.dispatchEvent(new Event('change'));
+        });
+    })();
+</script>

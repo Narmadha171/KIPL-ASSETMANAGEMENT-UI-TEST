@@ -1,0 +1,108 @@
+@page
+@model KIPL.AssetManagement.Web.Pages.Ops.BulkImportModel
+@{
+    ViewData["Title"] = "Bulk import";
+    var result = Model.Result;
+}
+
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Bulk import</h1>
+            <div class="page-sub">Load a CSV of new assets. Validate first, then import for real.</div>
+        </div>
+    </div>
+
+    <div class="two-col">
+        <div class="panel">
+            <div class="panel-head"><h3>Upload a file</h3></div>
+            <form method="post" enctype="multipart/form-data" style="padding:20px;">
+                <div asp-validation-summary="ModelOnly" class="validation-summary field-error"></div>
+
+                <div class="field" style="margin-bottom:16px;">
+                    <label for="Upload">CSV file</label>
+                    <input id="Upload" asp-for="Upload" type="file" accept=".csv" />
+                </div>
+
+                <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; margin-bottom:18px;">
+                    <input asp-for="DryRun" type="checkbox" style="width:auto;" />
+                    <span>Validate only — do not write anything yet</span>
+                </label>
+
+                <div class="form-actions" style="margin-top:0;">
+                    <button type="submit" class="btn btn-primary">@Icons.Svg("upload", 15) Process file</button>
+                    <a class="btn btn-outline" asp-page="/Ops/BulkImport" asp-page-handler="Template">
+                        @Icons.Svg("download", 15) Download template
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head"><h3>Expected columns</h3></div>
+            <div style="padding:18px 20px;">
+                <div class="mono" style="font-size:11.5px; background:var(--slate); padding:12px; border-radius:var(--radius-sm); overflow-x:auto; white-space:nowrap;">
+                    @Model.TemplateHeader
+                </div>
+                <ul style="font-size:12.5px; color:var(--ink-soft); margin:16px 0 0; padding-left:18px; line-height:1.8;">
+                    <li><strong>Brand</strong> is the only required column.</li>
+                    <li>Leave <strong>Tag</strong> blank and one is generated for you.</li>
+                    <li><strong>Category</strong> and <strong>Condition</strong> must match the built-in lists.</li>
+                    <li>Dates use <span class="mono">yyyy-MM-dd</span>.</li>
+                    <li>Every imported asset enters as <strong>In stock</strong>.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    @if (result is not null)
+    {
+        <div class="panel" style="margin-top:16px;">
+            <div class="panel-head">
+                <h3>@(Model.DryRun ? "Validation result" : "Import result")</h3>
+                <span>
+                    <span class="pill pill-success">@result.Imported ok</span>
+                    @if (result.Skipped > 0)
+                    {
+                        <span class="pill pill-danger" style="margin-left:6px;">@result.Skipped skipped</span>
+                    }
+                </span>
+            </div>
+
+            @if (Model.DryRun && result.Imported > 0)
+            {
+                <div style="padding:14px 20px 0;">
+                    <div class="banner banner-info">
+                        @Icons.Svg("info", 16)
+                        <span>Nothing has been saved. Untick “Validate only” and upload again to import for real.</span>
+                    </div>
+                </div>
+            }
+
+            <table style="margin-top:10px;">
+                <thead>
+                <tr><th>ROW</th><th>RESULT</th><th>TAG</th><th>MESSAGE</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var row in result.Rows.Take(200))
+                {
+                    <tr class="data-row">
+                        <td class="mono">@row.RowNumber</td>
+                        <td>
+                            <span class="@(row.Succeeded ? "pill pill-success" : "pill pill-danger")">
+                                @(row.Succeeded ? "OK" : "Skipped")
+                            </span>
+                        </td>
+                        <td class="mono">@(row.Tag ?? "—")</td>
+                        <td class="cell-muted">@(row.Error ?? "Ready to import")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

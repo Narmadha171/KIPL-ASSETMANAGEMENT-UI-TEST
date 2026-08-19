@@ -1,0 +1,178 @@
+@page
+@using KIPL.AssetManagement.Web.Pages.Ops
+@using KIPL.AssetManagement.Application.Users
+@model KIPL.AssetManagement.Web.Pages.Ops.UsersModel
+@{
+    ViewData["Title"] = "User management";
+    var c = Model.Counts;
+}
+
+@section TopActions {
+    <button type="button" class="btn btn-primary btn-sm" data-modal="addUser">@Icons.Svg("userplus", 15) Add user</button>
+}
+
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">User management</h1>
+            <div class="page-sub">Who can sign in, what role they hold, and how much kit they are carrying.</div>
+        </div>
+    </div>
+
+    <div class="kpi-row">
+        <div class="kpi-card"><div class="kpi-badge tone-signal">@Icons.Svg("users", 15)</div><div class="num">@c.Total</div><div class="lbl">TOTAL USERS</div></div>
+        <div class="kpi-card"><div class="kpi-badge tone-success">@Icons.Svg("checkcircle", 15)</div><div class="num">@c.Active</div><div class="lbl">ACTIVE</div></div>
+        <div class="kpi-card"><div class="kpi-badge tone-signal">@Icons.Svg("shield", 15)</div><div class="num">@c.Administrators</div><div class="lbl">ADMINISTRATORS</div></div>
+        <div class="kpi-card"><div class="kpi-badge tone-neutral">@Icons.Svg("helpcircle", 15)</div><div class="num">@c.Inactive</div><div class="lbl">INACTIVE</div></div>
+    </div>
+
+    <div class="panel">
+        <form method="get" class="filter-bar">
+            <div class="field" style="flex:2;">
+                <label for="Search">Search</label>
+                <input id="Search" name="Search" value="@Model.Search" placeholder="Name or email" />
+            </div>
+            <div class="field">
+                <label for="Role">Role</label>
+                <select id="Role" name="Role" data-autosubmit>
+                    <option value="">All roles</option>
+                    @foreach (var role in Model.AllRoles)
+                    {
+                        <option value="@role" selected="@(Model.Role == role)">@role</option>
+                    }
+                </select>
+            </div>
+            <button type="submit" class="btn btn-outline btn-sm">Apply</button>
+            <a class="btn btn-outline btn-sm" asp-page="/Ops/Users">Reset</a>
+        </form>
+
+        @if (Model.Users.TotalCount == 0)
+        {
+            <partial name="_Empty" model="@("No users match that search.")" />
+        }
+        else
+        {
+            <table>
+                <thead>
+                <tr>
+                    <th style="width:34px;">
+                        <input type="checkbox" data-select-all="userRows" aria-label="Select all" />
+                    </th>
+                    <th><a href="@Model.SortLink("name")">USER <span class="sort-arrow">@Model.SortArrow("name")</span></a></th>
+                    <th><a href="@Model.SortLink("role")">ROLE <span class="sort-arrow">@Model.SortArrow("role")</span></a></th>
+                    <th><a href="@Model.SortLink("assets")">ASSETS <span class="sort-arrow">@Model.SortArrow("assets")</span></a></th>
+                    <th><a href="@Model.SortLink("lastlogin")">LAST LOGIN <span class="sort-arrow">@Model.SortArrow("lastlogin")</span></a></th>
+                    <th><a href="@Model.SortLink("status")">STATUS <span class="sort-arrow">@Model.SortArrow("status")</span></a></th>
+                    <th style="text-align:right;">ACTIONS</th>
+                </tr>
+                </thead>
+                <tbody id="userRows">
+                @foreach (var u in Model.Users.Items)
+                {
+                    <tr class="data-row">
+                        <td><input type="checkbox" aria-label="Select @u.FullName" /></td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div class="avatar">@u.Initials</div>
+                                <div>
+                                    <div style="font-weight:600;">@u.FullName</div>
+                                    <div class="cell-muted" style="font-size:11.5px;">@u.Email</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="cell-muted">@u.RoleName</td>
+                        <td class="mono">@u.AssetCount</td>
+                        <td class="cell-muted">@DisplayHelpers.Relative(u.LastLoginUtc)</td>
+                        <td><span class="@DisplayHelpers.PillClass(u.Status)">@u.Status</span></td>
+                        <td>
+                            <div class="row-actions">
+                                <button type="button" class="btn btn-outline btn-sm" data-modal="editUser-@u.Id">Edit</button>
+                                @if (u.Status == UserStatus.Active)
+                                {
+                                    <form method="post" asp-page-handler="Deactivate"
+                                          data-confirm="Deactivate @u.FullName? They will not be able to sign in.">
+                                        <input type="hidden" name="id" value="@u.Id" />
+                                        <button type="submit" class="btn btn-outline btn-sm">Deactivate</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+
+            <partial name="_Pager" model="@((Model.Users.PageNumber, Model.Users.TotalPages, Model.Users.FirstRow, Model.Users.LastRow, Model.Users.TotalCount))" />
+        }
+    </div>
+</div>
+
+@section Modals {
+    <div class="modal-overlay @(Model.ReopenAddUser ? "open" : "")" id="modal-addUser">
+        <div class="modal">
+            <form method="post" asp-page-handler="AddUser">
+                <div class="modal-head">
+                    <h3>Add user</h3>
+                    <button type="button" class="icon-btn" data-close-modal>✕</button>
+                </div>
+
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="field-error"></div>
+
+                    <div class="field">
+                        <label asp-for="NewUser.FullName"></label>
+                        <input asp-for="NewUser.FullName" placeholder="Priya Shankar" />
+                        <span asp-validation-for="NewUser.FullName" class="field-error"></span>
+                    </div>
+
+                    <div class="field">
+                        <label asp-for="NewUser.Email"></label>
+                        <input asp-for="NewUser.Email" type="email" placeholder="priya.shankar@kipl.com" />
+                        <span asp-validation-for="NewUser.Email" class="field-error"></span>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label asp-for="NewUser.RoleName"></label>
+                            <select asp-for="NewUser.RoleName">
+                                @foreach (var role in Model.AllRoles)
+                                {
+                                    <option value="@role">@role</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label asp-for="NewUser.ManagerId"></label>
+                            <select asp-for="NewUser.ManagerId" asp-items="Model.Managers">
+                                <option value="">— none —</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label asp-for="NewUser.Password"></label>
+                        <input asp-for="NewUser.Password" type="password" placeholder="Leave blank for Kipl@12345" />
+                        <span asp-validation-for="NewUser.Password" class="field-error"></span>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="margin-top:16px;">
+                    <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create user</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @foreach (var u in Model.Users.Items)
+    {
+        if (Model.EditDetails.TryGetValue(u.Id, out var edit))
+        {
+            <partial name="_EditUserModal" model="@(new EditUserModalModel(edit, Model.Departments, Model.Managers, Model.AllRoles, Model.ReopenEditModal == $"editUser-{u.Id}"))" />
+        }
+    }
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

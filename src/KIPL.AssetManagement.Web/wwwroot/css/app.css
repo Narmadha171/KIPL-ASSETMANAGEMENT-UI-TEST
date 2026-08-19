@@ -1,0 +1,383 @@
+/* ------------------------------------------------------------------
+   Overrides for the server-rendered app. The prototype was a single
+   HTML file that toggled .page visibility with JS; here each screen is
+   its own route, so pages are always visible.
+------------------------------------------------------------------- */
+.page { display: block; }
+
+/* The rail items are anchors rather than buttons now. */
+a.nav-item { text-decoration: none; }
+a.nav-item:visited { color: var(--ink-soft); }
+a.nav-item.active,
+a.nav-item.active:visited { color: var(--signal-deep); }
+
+.badge {
+    margin-left: auto;
+    background: var(--signal);
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+}
+
+.nav-divider {
+    height: 1px;
+    background: var(--line);
+    margin: 8px 10px;
+}
+
+/* Pagination footer */
+.pager {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+}
+.pager-controls { display: flex; gap: 6px; align-items: center; }
+.pager-label { padding: 6px 4px; }
+.pager a { text-decoration: none; }
+
+/* Filter bar above tables */
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--slate);
+}
+.filter-bar .field { min-width: 150px; }
+.filter-bar .field input,
+.filter-bar .field select { background: var(--paper); }
+
+/* Generic two-column form layout used by the create/edit pages */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+.form-grid .full { grid-column: 1 / -1; }
+.form-actions { display: flex; gap: 8px; margin-top: 20px; }
+
+/* Validation output */
+.field-error { color: var(--danger); font-size: 11.5px; font-weight: 600; }
+.validation-summary { margin-bottom: 16px; }
+.validation-summary ul { margin: 0; padding-left: 18px; }
+
+/* Inline action forms inside table rows */
+.row-actions { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+.row-actions form { margin: 0; }
+.inline-form { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+
+/* Detail description lists */
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px 24px;
+    padding: 20px;
+}
+.detail-grid .lbl {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--ink-faint);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+.detail-grid .val { font-size: 13.5px; margin-top: 4px; }
+
+.panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+}
+.panel-head h3 { font-size: 14px; }
+
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.two-col { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; align-items: start; }
+
+@media (max-width: 1100px) {
+    .two-col { grid-template-columns: 1fr; }
+    .asset-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 760px) {
+    .asset-grid { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .filter-bar .field { min-width: 0; flex: 1 1 140px; }
+    .detail-grid { grid-template-columns: 1fr; padding: 16px; }
+    .auth-card { padding: 22px; }
+}
+
+/* Login screen */
+.auth-shell {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse 1200px 600px at 15% -10%, #EEF2FE 0%, var(--slate) 55%);
+    padding: 24px;
+}
+.auth-card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    padding: 30px;
+    box-shadow: var(--shadow-card);
+}
+.auth-brand { display: flex; align-items: center; gap: 11px; margin-bottom: 22px; }
+.demo-accounts {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-faint);
+}
+.demo-accounts button {
+    background: none;
+    border: none;
+    padding: 3px 0;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--signal-deep);
+    font-weight: 600;
+    text-align: left;
+    font-family: inherit;
+}
+.demo-accounts button:hover { text-decoration: underline; }
+
+/* ------------------------------------------------------------------
+   Modal dialogs — the prototype's .modal CSS lives in site.css; these
+   are the additions needed for server-rendered forms inside them.
+------------------------------------------------------------------- */
+.modal form { display: contents; }
+.modal .modal-body { display: flex; flex-direction: column; gap: 13px; }
+.modal-head .icon-btn { border: none; background: transparent; font-size: 15px; color: var(--ink-faint); }
+.modal-head .icon-btn:hover { background: var(--slate); color: var(--ink); }
+
+/* Buttons that look like links inside modal chrome. */
+.linkish {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-size: 12px;
+    color: var(--signal);
+    cursor: pointer;
+}
+.linkish:hover { text-decoration: underline; }
+
+/* Fulfilment route picker (Assign from stock / Order online). */
+.route-option {
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    width: 100%;
+    background: var(--paper);
+    text-align: left;
+    font: inherit;
+    transition: border-color .15s var(--ease), background .15s var(--ease);
+}
+.route-option:hover { border-color: var(--signal); }
+.route-option.primary { border: 1.5px solid var(--signal); background: var(--signal-soft); }
+.route-option .route-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--slate);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+}
+.route-option.primary .route-icon { background: var(--paper); }
+
+/* Selectable asset rows inside the assign dialog. */
+.pick-list {
+    max-height: 190px;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+}
+.pick-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    font-size: 12.5px;
+    cursor: pointer;
+}
+.pick-row:last-child { border-bottom: none; }
+.pick-row:hover { background: var(--slate); }
+.pick-row input { width: auto; }
+
+/* Sortable column headers. */
+thead th a { color: inherit; text-decoration: none; display: inline-flex; gap: 4px; align-items: center; }
+thead th a:hover { color: var(--ink); }
+thead th .sort-arrow { font-size: 9px; opacity: .8; }
+
+/* Tabs rendered as anchors. */
+.tabs a.tab { text-decoration: none; }
+
+/* site.css already carries #toastStack, .toast and the challan print rules
+   from the prototype. Only the asset-label print area is new. */
+@media print {
+    #labelPrintArea, #labelPrintArea * { visibility: visible !important; }
+    #labelPrintArea { position: absolute !important; inset: 0 !important; }
+}
+
+/* Printable asset tag label. */
+.label-sheet {
+    width: 62mm;
+    background: #fff;
+    border: 1px solid #0C0E14;
+    border-radius: 3px;
+    padding: 6mm;
+    margin: 0 auto;
+    color: #0C0E14;
+    font-family: 'Inter', sans-serif;
+}
+.label-sheet .label-brand { display: flex; align-items: center; gap: 6px; }
+.label-sheet .label-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-top: 5mm;
+}
+.label-sheet .label-meta { font-size: 9px; color: #464C5C; margin-top: 2mm; line-height: 1.5; }
+/* Permission on/off switch — mirrors the prototype's role-permission toggle. */
+.perm-switch {
+    width: 34px;
+    height: 19px;
+    border-radius: 20px;
+    background: #DADDE5;
+    border: none;
+    padding: 0;
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .15s var(--ease, ease);
+}
+.perm-switch.on { background: var(--signal); }
+.perm-switch .knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 15px;
+    height: 15px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(12,14,20,.25);
+    transition: left .15s var(--ease, ease);
+}
+.perm-switch.on .knob { left: 17px; }
+
+.label-qr-wrap {
+    margin-top: 4mm;
+    display: flex;
+    justify-content: center;
+}
+.label-qr {
+    width: 26mm;
+    height: 26mm;
+    image-rendering: pixelated;
+    border: 1px solid #E4E6EE;
+    border-radius: 2px;
+    background: #fff;
+}
+
+/* ------------------------------------------------------------------
+   Notification popup modal & topbar icon
+------------------------------------------------------------------- */
+.notif-modal {
+    padding: 20px 22px;
+    background: var(--paper);
+}
+
+.notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--slate);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    transition: transform .14s var(--ease), box-shadow .14s var(--ease), border-color .14s var(--ease), background .14s;
+    position: relative;
+}
+
+.notif-item:hover {
+    background: var(--paper);
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-xs);
+    transform: translateY(-1px);
+}
+
+.notif-item.urgent {
+    border-left: 3.5px solid var(--signal);
+    background: linear-gradient(90deg, var(--signal-soft) 0%, var(--slate) 8%);
+}
+
+.notif-item.urgent:hover {
+    background: linear-gradient(90deg, var(--signal-soft) 0%, var(--paper) 8%);
+}
+
+.notif-title {
+    font-weight: 600;
+    font-size: 12.8px;
+    color: var(--ink);
+}
+
+.notif-time {
+    font-size: 10.5px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+}
+
+.notif-desc {
+    font-size: 11.8px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    margin: 0;
+}
+
+.notif-action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--signal);
+    text-decoration: none;
+    transition: color .12s;
+}
+
+.notif-action-link:hover {
+    color: var(--signal-deep);
+    text-decoration: underline;
+}
+
+.notif-empty {
+    text-align: center;
+    padding: 34px 20px;
+    color: var(--ink-soft);
+}
+
+.dot-pulse {
+    animation: livePulse 2s infinite ease-in-out;
+}
+

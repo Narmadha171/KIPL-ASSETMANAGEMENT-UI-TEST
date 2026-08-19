@@ -1,0 +1,78 @@
+@page
+@using KIPL.AssetManagement.Web.Pages.Shared
+@model KIPL.AssetManagement.Web.Pages.Ops.HrApprovalsModel
+@{
+    ViewData["Title"] = "Approvals";
+}
+
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Approvals</h1>
+            <div class="page-sub" style="color:var(--danger); display:flex; align-items:center; gap:6px;">
+                <span style="width:6px; height:6px; border-radius:999px; background:var(--danger); display:inline-block;"></span>
+                @Model.Pending.Count request@(Model.Pending.Count == 1 ? "" : "s") waiting on your review
+            </div>
+        </div>
+
+    </div>
+
+    @if (Model.Pending.Count == 0)
+    {
+        <div class="panel" style="text-align:center; padding:36px; color:var(--ink-faint);">
+            No pending approvals right now.
+        </div>
+    }
+    else
+    {
+        @foreach (var r in Model.Pending)
+        {
+            <partial name="_ApprovalCard"
+                     model="@(new ApprovalCardModel(r, Model.CanApprove, Model.CanFulfil, Model.NeedsAdmin(r)))" />
+        }
+    }
+
+    <div style="margin-top:24px;">
+        <h3 style="font-size:14px; margin-bottom:10px;">Pending Verification (Online Orders)</h3>
+
+        @if (Model.AwaitingVerification.Count == 0)
+        {
+            <div class="panel" style="padding:24px; text-align:center; color:var(--ink-faint); font-size:13px;">
+                Nothing waiting to be checked in.
+            </div>
+        }
+        else
+        {
+            @foreach (var r in Model.AwaitingVerification)
+            {
+                <div class="panel" style="padding:16px 20px; display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div style="display:flex; gap:12px; align-items:center;">
+                        <div class="avatar">@DisplayHelpers.Initials(r.RequesterName)</div>
+                        <div>
+                            <div style="font-weight:600; font-size:13.5px;">@r.RequesterName</div>
+                            <div class="cell-muted" style="font-size:12px;">
+                                @r.ItemName @(r.OrderId is not null ? $"· Order {r.OrderId}" : "")
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary btn-sm"
+                            data-modal="verifySubmission"
+                            data-requestid="@r.Id"
+                            data-requester="@r.RequesterName"
+                            data-initials="@DisplayHelpers.Initials(r.RequesterName)"
+                            data-item="@r.ItemName"
+                            data-orderid="@(r.OrderId ?? "—")">Verify submission</button>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@section Modals {
+    <partial name="_ApprovalModals" model="@(new ApprovalModalsModel(Model.AssignableAssets))" />
+    <partial name="_VerifySubmissionModal" />
+    @if (Model.Challan is not null)
+    {
+        <partial name="_ChallanModal" model="Model.Challan" />
+    }
+}

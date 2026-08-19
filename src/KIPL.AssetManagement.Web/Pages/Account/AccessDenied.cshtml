@@ -1,0 +1,22 @@
+@page
+@{
+    ViewData["Title"] = "Access denied";
+}
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Access denied</h1>
+            <div class="page-sub">Your role does not include permission for that screen.</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div style="padding:40px 24px; text-align:center;">
+            <div style="font-size:13px; color:var(--ink-soft); margin-bottom:18px;">
+                If you believe this is a mistake, ask an administrator to review your role on the
+                Roles &amp; Permissions screen.
+            </div>
+            <a class="btn btn-primary" asp-page="/Index">Back to my dashboard</a>
+        </div>
+    </div>
+</div>

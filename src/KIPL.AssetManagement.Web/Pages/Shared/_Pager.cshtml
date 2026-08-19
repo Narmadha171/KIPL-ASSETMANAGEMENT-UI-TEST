@@ -1,0 +1,29 @@
+@using Microsoft.AspNetCore.Http
+@model (int PageNumber, int TotalPages, int FirstRow, int LastRow, int TotalCount)
+@{
+    string LinkTo(int page)
+    {
+        var query = ViewContext.HttpContext.Request.Query
+            .Where(q => q.Key != "PageNumber")
+            .ToDictionary(q => q.Key, q => (string?)q.Value.ToString());
+        query["PageNumber"] = page.ToString();
+        return QueryString.Create(query).ToString();
+    }
+}
+@if (Model.TotalCount > 0)
+{
+    <div class="pager">
+        <span>Showing @Model.FirstRow–@Model.LastRow of @Model.TotalCount</span>
+        <span class="pager-controls">
+            @if (Model.PageNumber > 1)
+            {
+                <a class="btn btn-outline btn-sm" href="@LinkTo(Model.PageNumber - 1)">Previous</a>
+            }
+            <span class="pager-label">Page @Model.PageNumber of @Math.Max(Model.TotalPages, 1)</span>
+            @if (Model.PageNumber < Model.TotalPages)
+            {
+                <a class="btn btn-outline btn-sm" href="@LinkTo(Model.PageNumber + 1)">Next</a>
+            }
+        </span>
+    </div>
+}

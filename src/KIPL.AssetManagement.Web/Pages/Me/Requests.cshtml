@@ -1,0 +1,98 @@
+@page
+@model KIPL.AssetManagement.Web.Pages.Me.RequestsModel
+@{
+    ViewData["Title"] = "My requests";
+    var awaiting = Model.Requests.Where(r => r.Status == RequestStatus.Dispatched).ToList();
+}
+
+@section TopActions {
+    <button type="button" class="btn btn-primary btn-sm" data-modal="raiseRequest">@Icons.Svg("plus", 15) Request an asset</button>
+}
+
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">My Requests</h1>
+            <div class="page-sub">Ask for what you need and track it through to delivery.</div>
+        </div>
+    </div>
+
+    @if (awaiting.Count > 0)
+    {
+        <div class="banner banner-action" style="margin-bottom:18px;">
+            <span>
+                @Icons.Svg("truck", 16)
+                <strong style="margin-left:6px;">@awaiting.Count item(s) dispatched to you.</strong>
+                Confirm receipt once they arrive.
+            </span>
+        </div>
+    }
+
+    <h3 style="font-size:14px; margin-bottom:10px;">My requests</h3>
+
+    @if (Model.Requests.Count == 0)
+    {
+        <div class="panel" style="text-align:center; padding:36px; color:var(--ink-faint);">
+            You have not requested anything yet.
+        </div>
+    }
+    else
+    {
+        @foreach (var r in Model.Requests)
+        {
+            <partial name="_RequestCard" model="r" />
+        }
+    }
+</div>
+
+@section Modals {
+    <partial name="_ProofOfReceiptModal" />
+    <partial name="_ProofOfReceiptOnlineModal" />
+
+    <div class="modal-overlay" id="modal-raiseRequest">
+        <div class="modal">
+            <form method="post" asp-page-handler="Raise">
+                <div class="modal-head">
+                    <h3>Request an asset</h3>
+                    <button type="button" class="icon-btn" data-close-modal>✕</button>
+                </div>
+
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="field-error"></div>
+
+                    <div class="field">
+                        <label asp-for="Input.ItemName"></label>
+                        <input asp-for="Input.ItemName" placeholder="MacBook Pro 16&quot;" />
+                        <span asp-validation-for="Input.ItemName" class="field-error"></span>
+                    </div>
+
+                    <div class="field">
+                        <label asp-for="Input.Category"></label>
+                        <select asp-for="Input.Category" asp-items="Html.GetEnumSelectList<AssetCategory>()"></select>
+                    </div>
+
+                    <div class="field">
+                        <label asp-for="Input.Reason"></label>
+                        <textarea asp-for="Input.Reason" rows="4"
+                                  placeholder="A clear business reason helps your manager approve it faster."></textarea>
+                        <span asp-validation-for="Input.Reason" class="field-error"></span>
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="margin-top:16px;">
+                    <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    @if (!ViewData.ModelState.IsValid)
+    {
+        @* Reopen the dialog so the user sees why the submission failed. *@
+        <script>openModal('raiseRequest');</script>
+    }
+}

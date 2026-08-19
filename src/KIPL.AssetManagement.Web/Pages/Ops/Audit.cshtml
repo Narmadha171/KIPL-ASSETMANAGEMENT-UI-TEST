@@ -1,0 +1,89 @@
+@page
+@model KIPL.AssetManagement.Web.Pages.Ops.AuditModel
+@{
+    ViewData["Title"] = "Audit trail";
+}
+
+@section TopActions {
+    <a class="btn btn-outline btn-sm"
+       asp-page="/Ops/Audit" asp-page-handler="Export"
+       asp-route-Search="@Model.Search" asp-route-ActionName="@Model.ActionName" asp-route-RoleName="@Model.RoleName">
+        @Icons.Svg("download", 15) Export CSV
+    </a>
+}
+
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Audit trail</h1>
+            <div class="page-sub">Every state-changing action, appended in order and never edited.</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <form method="get" class="filter-bar">
+            <div class="field" style="flex:2;">
+                <label for="Search">Search</label>
+                <input id="Search" name="Search" value="@Model.Search" placeholder="User, entity or action" />
+            </div>
+            <div class="field">
+                <label for="ActionName">Action</label>
+                <select id="ActionName" name="ActionName" data-autosubmit>
+                    <option value="">All actions</option>
+                    @foreach (var action in Model.Actions)
+                    {
+                        <option value="@action" selected="@(Model.ActionName == action)">@action</option>
+                    }
+                </select>
+            </div>
+            <div class="field">
+                <label for="RoleName">Role</label>
+                <select id="RoleName" name="RoleName" data-autosubmit>
+                    <option value="">All roles</option>
+                    @foreach (var role in Roles.All)
+                    {
+                        <option value="@role" selected="@(Model.RoleName == role)">@role</option>
+                    }
+                </select>
+            </div>
+            <div class="field">
+                <label for="FromUtc">From</label>
+                <input id="FromUtc" name="FromUtc" type="date" value="@(Model.FromUtc?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="field">
+                <label for="ToUtc">To</label>
+                <input id="ToUtc" name="ToUtc" type="date" value="@(Model.ToUtc?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <button type="submit" class="btn btn-outline btn-sm">Apply</button>
+            <a class="btn btn-outline btn-sm" asp-page="/Ops/Audit">Reset</a>
+        </form>
+
+        @if (Model.Entries.TotalCount == 0)
+        {
+            <partial name="_Empty" model="@("No audit entries match those filters.")" />
+        }
+        else
+        {
+            <table>
+                <thead>
+                <tr><th>WHEN</th><th>WHO</th><th>ROLE</th><th>ACTION</th><th>ENTITY</th><th>DETAIL</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var e in Model.Entries.Items)
+                {
+                    <tr class="data-row">
+                        <td class="cell-muted" title="@e.TimestampUtc.ToString("u")">@DisplayHelpers.Relative(e.TimestampUtc)</td>
+                        <td style="font-weight:600;">@e.UserName</td>
+                        <td class="cell-muted">@e.RoleName</td>
+                        <td>@e.Action</td>
+                        <td class="mono">@e.Entity</td>
+                        <td class="cell-muted">@(e.Detail ?? "—")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+
+            <partial name="_Pager" model="@((Model.Entries.PageNumber, Model.Entries.TotalPages, Model.Entries.FirstRow, Model.Entries.LastRow, Model.Entries.TotalCount))" />
+        }
+    </div>
+</div>

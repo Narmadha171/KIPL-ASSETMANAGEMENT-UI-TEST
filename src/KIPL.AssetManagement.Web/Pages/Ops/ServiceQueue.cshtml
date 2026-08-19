@@ -1,0 +1,140 @@
+@page
+@model KIPL.AssetManagement.Web.Pages.Ops.ServiceQueueModel
+@{
+    ViewData["Title"] = "Service queue";
+}
+
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Service queue</h1>
+            <div class="page-sub">@Model.OpenCount issue@(Model.OpenCount == 1 ? "" : "s") reported by employees.</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="tabs">
+            <a class="tab @(Model.Status is null ? "active" : "")" asp-page="/Ops/ServiceQueue">All</a>
+            @foreach (var status in Enum.GetValues<ServiceRequestStatus>())
+            {
+                <a class="tab @(Model.Status == status ? "active" : "")"
+                   asp-page="/Ops/ServiceQueue" asp-route-Status="@((int)status)">@status</a>
+            }
+        </div>
+
+        @if (Model.Items.Count == 0)
+        {
+            <partial name="_Empty" model="@("Nothing in the service queue.")" />
+        }
+        else
+        {
+            <table>
+                <thead>
+                <tr>
+                    <th>REF</th><th>ASSET</th><th>REPORTED BY</th><th>ISSUE</th>
+                    <th>URGENCY</th><th>STATUS</th><th style="text-align:right;">ACTIONS</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var s in Model.Items)
+                {
+                    <tr class="data-row">
+                        <td class="mono" style="font-weight:600;">@s.Reference</td>
+                        <td>
+                            <div style="font-weight:600;">@s.AssetName</div>
+                            <div style="margin-top:4px;"><span class="tag-chip">@s.AssetTag</span></div>
+                        </td>
+                        <td>@s.ReporterName</td>
+                        <td style="max-width:280px;">
+                            <div style="font-weight:600;">@s.IssueType</div>
+                            <div class="cell-muted" style="font-size:11.5px;">@s.Description</div>
+                        </td>
+                        <td><span class="@DisplayHelpers.PillClass(s.Urgency)">@DisplayHelpers.Label(s.Urgency)</span></td>
+                        <td class="cell-muted">@s.Status</td>
+                        <td>
+                            <div class="row-actions">
+                                @if (s.Status == ServiceRequestStatus.Open)
+                                {
+                                    <form method="post" asp-page-handler="Accept" style="margin:0;">
+                                        <input type="hidden" name="id" value="@s.Id" />
+                                        <button type="submit" class="btn btn-primary btn-sm">Accept</button>
+                                    </form>
+                                    <button type="button" class="btn btn-outline btn-sm"
+                                            data-modal="dismissService" data-id="@s.Id"
+                                            data-reference="@s.Reference">Dismiss</button>
+                                }
+                                @if (s.Status == ServiceRequestStatus.InProgress)
+                                {
+                                    <button type="button" class="btn btn-success btn-sm"
+                                            data-modal="resolveService" data-id="@s.Id"
+                                            data-reference="@s.Reference">Resolve</button>
+                                }
+                                @if (s.Resolution is not null)
+                                {
+                                    <span class="cell-muted" style="font-size:11.5px;">@s.Resolution</span>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@section Modals {
+    <div class="modal-overlay" id="modal-dismissService">
+        <div class="modal" style="width:400px;">
+            <form method="post" asp-page-handler="Dismiss">
+                <div class="modal-head">
+                    <h3>Dismiss report</h3>
+                    <button type="button" class="icon-btn" data-close-modal>✕</button>
+                </div>
+                <input type="hidden" name="id" data-input="id" value="0" />
+                <div class="modal-context">
+                    <div class="avatar">!</div>
+                    <div><div style="font-weight:600; font-size:13px;" data-field="reference">—</div></div>
+                </div>
+                <div class="field">
+                    <label for="dismissReason">Why is this being closed?</label>
+                    <textarea id="dismissReason" name="reason" rows="3" required
+                              placeholder="The reporter sees this."></textarea>
+                </div>
+                <div class="modal-actions" style="margin-top:16px;">
+                    <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-danger">Dismiss</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-resolveService">
+        <div class="modal" style="width:400px;">
+            <form method="post" asp-page-handler="Resolve">
+                <div class="modal-head">
+                    <h3>Resolve service request</h3>
+                    <button type="button" class="icon-btn" data-close-modal>✕</button>
+                </div>
+                <input type="hidden" name="id" data-input="id" value="0" />
+                <div class="modal-context">
+                    <div class="avatar">🔧</div>
+                    <div><div style="font-weight:600; font-size:13px;" data-field="reference">—</div></div>
+                </div>
+                <div class="field">
+                    <label for="resolution">What was done?</label>
+                    <textarea id="resolution" name="resolution" rows="3" required
+                              placeholder="Battery replaced under warranty."></textarea>
+                </div>
+                <div class="banner banner-info" style="margin-top:12px;">
+                    @Icons.Svg("info", 15)
+                    <span>Resolving returns the asset to stock.</span>
+                </div>
+                <div class="modal-actions" style="margin-top:16px;">
+                    <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-success">Mark resolved</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

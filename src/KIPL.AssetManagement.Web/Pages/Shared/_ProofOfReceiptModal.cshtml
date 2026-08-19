@@ -1,0 +1,41 @@
+@* Employee confirms an item arrived, optionally with a photo. *@
+<div class="modal-overlay" id="modal-proofOfReceipt">
+    <div class="modal" style="width:400px;">
+        <form method="post" asp-page-handler="Confirm" enctype="multipart/form-data">
+            <div class="modal-head">
+                <h3 style="margin-top:4px;">Confirm receipt</h3>
+                <button type="button" class="icon-btn" data-close-modal>✕</button>
+            </div>
+
+            <input type="hidden" name="RequestId" data-input="requestid" value="0" />
+
+            <div class="modal-context">
+                <div class="avatar">📦</div>
+                <div>
+                    <div style="font-weight:600; font-size:13px;" data-field="item">—</div>
+                    <div class="cell-muted mono" style="font-size:11.5px;" data-field="tag">—</div>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <div style="font-size:13px; color:var(--ink-soft);">
+                    Confirming tells IT the asset is with you and moves it onto your record.
+                </div>
+
+                <div class="field">
+                    <label>Photo of the item as received <span class="cell-muted" style="font-weight:500;">— optional</span></label>
+                    <div class="dropzone" id="receiptZone" data-for="receiptPhoto" data-label="📷 Capture or attach a photo">
+                        📷 Capture or attach a photo
+                    </div>
+                    <input type="file" id="receiptPhoto" name="Photo" accept="image/*" capture="environment"
+                           data-zone="receiptZone" style="display:none;" />
+                </div>
+            </div>
+
+            <div class="modal-actions" style="margin-top:16px;">
+                <button type="button" class="btn btn-outline" data-close-modal>Not yet</button>
+                <button type="submit" class="btn btn-success">Confirm receipt</button>
+            </div>
+        </form>
+    </div>
+</div>

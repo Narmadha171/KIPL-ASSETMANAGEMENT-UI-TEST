@@ -1,0 +1,183 @@
+@page
+@model KIPL.AssetManagement.Web.Pages.Me.ReturnsModel
+@{
+    ViewData["Title"] = "My returns";
+}
+
+@section TopActions {
+    @if (Model.ReturnableAssets.Count > 0)
+    {
+        <button type="button" class="btn btn-primary btn-sm" data-modal="raiseReturn">@Icons.Svg("undo", 15) Return an asset</button>
+    }
+}
+
+<div class="page">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">My Returns</h1>
+            <div class="page-sub">Hand an asset back and follow it until IT closes the inspection.</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        @if (Model.Returns.Count == 0)
+        {
+            <partial name="_Empty" model="@("You have no returns. Start one from the button above.")" />
+        }
+        else
+        {
+            <table>
+                <thead>
+                <tr><th>REFERENCE</th><th>ASSET</th><th>MODE</th><th>STAGE</th><th style="text-align:right;">ACTIONS</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var r in Model.Returns)
+                {
+                    <tr class="data-row">
+                        <td class="mono" style="font-weight:600;">@r.Reference</td>
+                        <td>
+                            <div style="font-weight:600;">@DisplayHelpers.Emoji(r.Category) @r.AssetName</div>
+                            <div style="margin-top:4px;"><span class="tag-chip">@r.AssetTag</span></div>
+                        </td>
+                        <td class="cell-muted">
+                            @r.Mode
+                            @if (r.DropOffLocation is not null)
+                            {
+                                <div style="font-size:11px;">@r.DropOffLocation</div>
+                            }
+                            @if (r.TrackingNumber is not null)
+                            {
+                                <div class="mono" style="font-size:11px;">@r.TrackingNumber</div>
+                            }
+                        </td>
+                        <td>
+                            <span class="@DisplayHelpers.PillClass(r.Stage)">@DisplayHelpers.Label(r.Stage)</span>
+                            @if (r.Stage == ReturnStage.Closed && r.InspectedCondition is not null)
+                            {
+                                <div class="cell-muted" style="font-size:11px; margin-top:4px;">
+                                    Inspected: @r.InspectedCondition
+                                </div>
+                            }
+                        </td>
+                        <td>
+                            <div class="row-actions">
+                                @if (r.Stage == ReturnStage.AwaitingPickup)
+                                {
+                                    <button type="button" class="btn btn-primary btn-sm"
+                                            data-modal="trackReturn"
+                                            data-returnid="@r.Id"
+                                            data-reference="@r.Reference"
+                                            data-asset="@r.AssetName">Mark handed over</button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@section Modals {
+    @* ------------------------------------------------ Raise a return *@
+    <div class="modal-overlay" id="modal-raiseReturn">
+        <div class="modal">
+            <form method="post" asp-page-handler="Raise" enctype="multipart/form-data">
+                <div class="modal-head">
+                    <h3>Return an asset</h3>
+                    <button type="button" class="icon-btn" data-close-modal>✕</button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="field">
+                        <label for="returnAsset">Which asset?</label>
+                        <select id="returnAsset" name="assetId" required>
+                            @foreach (var a in Model.ReturnableAssets)
+                            {
+                                <option value="@a.Id" selected="@(Model.AssetId == a.Id)">@a.Tag — @a.Brand</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div data-choice-scope>
+                        <div class="field">
+                            <label>How will you return it?</label>
+                            <div class="choice-row" data-choice-group>
+                                <input type="hidden" name="mode" value="@((int)FulfilmentMode.Office)" />
+                                <div class="choice sel" data-value="@((int)FulfilmentMode.Office)">🏢 Drop at office</div>
+                                <div class="choice" data-value="@((int)FulfilmentMode.Courier)">🚚 Courier</div>
+                            </div>
+                        </div>
+
+                        <div class="field" data-when="@((int)FulfilmentMode.Office)">
+                            <label for="dropOffLocation">Drop-off point</label>
+                            <input id="dropOffLocation" name="dropOffLocation" placeholder="IT desk, 2nd floor" />
+                        </div>
+                        <div class="field" style="display:none;" data-when="@((int)FulfilmentMode.Courier)">
+                            <label for="returnCourier">Courier service</label>
+                            <input id="returnCourier" name="courierService" placeholder="Blue Dart" />
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="returnReason">Reason <span class="cell-muted" style="font-weight:500;">— optional</span></label>
+                        <textarea id="returnReason" name="reason" rows="3"
+                                  placeholder="Upgrading, leaving the team, no longer needed…"></textarea>
+                    </div>
+
+                    <div class="field">
+                        <label>Photo of the asset <span class="cell-muted" style="font-weight:500;">— optional</span></label>
+                        <div class="dropzone" id="returnZone" data-for="returnPhoto" data-label="📷 Capture or attach a photo">
+                            📷 Capture or attach a photo
+                        </div>
+                        <input type="file" id="returnPhoto" name="photo" accept="image/*" capture="environment"
+                               data-zone="returnZone" style="display:none;" />
+                    </div>
+                </div>
+
+                <div class="modal-actions" style="margin-top:16px;">
+                    <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-primary">Raise return</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @* ------------------------------------------------- Track / handover *@
+    <div class="modal-overlay" id="modal-trackReturn">
+        <div class="modal" style="width:400px;">
+            <form method="post" asp-page-handler="Handover">
+                <div class="modal-head">
+                    <h3>Track return</h3>
+                    <button type="button" class="icon-btn" data-close-modal>✕</button>
+                </div>
+
+                <input type="hidden" name="returnId" data-input="returnid" value="0" />
+
+                <div class="modal-context">
+                    <div class="avatar">↩️</div>
+                    <div>
+                        <div style="font-weight:600; font-size:13px;" data-field="asset">—</div>
+                        <div class="cell-muted mono" style="font-size:11.5px;" data-field="reference">—</div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="handoverTracking">Courier tracking number <span class="cell-muted" style="font-weight:500;">— if posted</span></label>
+                    <input id="handoverTracking" name="tracking" class="mono" placeholder="1Z999AA1…" />
+                </div>
+
+                <div class="banner banner-info" style="margin-top:12px;">
+                    @Icons.Svg("info", 15)
+                    <span>Office drop-offs go straight to inspection; couriered items move to in transit.</span>
+                </div>
+
+                <div class="modal-actions" style="margin-top:16px;">
+                    <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+                    <button type="submit" class="btn btn-primary">Confirm handover</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}

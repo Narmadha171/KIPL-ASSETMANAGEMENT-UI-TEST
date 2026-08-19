@@ -1,0 +1,99 @@
+@using KIPL.AssetManagement.Application.Inventory
+@model AssetDetailDto
+@{
+    var a = Model;
+}
+<div class="modal-overlay" id="modal-assetDetail-@a.Id">
+    <div class="modal" style="width:620px;">
+        <div class="modal-head">
+            <div>
+                <h3><span class="tag-chip">@a.Tag</span></h3>
+                <div class="cell-muted" style="font-size:11.5px; margin-top:4px;">Asset #@a.Id · @a.Brand @(a.Model ?? "")</div>
+            </div>
+            <button type="button" class="icon-btn" data-close-modal>✕</button>
+        </div>
+
+        <div class="modal-body">
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+                <span class="@DisplayHelpers.PillClass(a.Status)">@DisplayHelpers.Label(a.Status)</span>
+                <span class="pill pill-neutral">@a.Condition</span>
+                <span class="pill pill-neutral">@DisplayHelpers.Label(a.Category)</span>
+            </div>
+
+            <div class="two-col">
+                <div>
+                    <div class="lbl" style="font-size:10.5px; font-weight:700; color:var(--ink-faint); letter-spacing:.06em; margin-bottom:8px;">DETAILS</div>
+                    <table>
+                        <tbody>
+                        <tr><td class="cell-muted">Asset ID</td><td class="mono">AST-@(a.Id.ToString("D4"))</td></tr>
+                        <tr><td class="cell-muted">Serial number</td><td class="mono">@(a.SerialNumber ?? "—")</td></tr>
+                        <tr><td class="cell-muted">Location</td><td>@(a.Location ?? "—")</td></tr>
+                        <tr><td class="cell-muted">Price</td><td>@(a.PurchaseCost?.ToString("C") ?? "—")</td></tr>
+                        <tr><td class="cell-muted">Warranty until</td><td>@(a.WarrantyExpiry?.ToString("d MMM yyyy") ?? "—")</td></tr>
+                        <tr><td class="cell-muted">Assigned to</td><td>@a.AssignedToDisplay</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div>
+                    <div class="lbl" style="font-size:10.5px; font-weight:700; color:var(--ink-faint); letter-spacing:.06em; margin-bottom:8px;">STATUS TIMELINE</div>
+                    @if (a.History.Count == 0)
+                    {
+                        <div class="cell-muted" style="font-size:12.5px;">This asset has never been assigned.</div>
+                    }
+                    else
+                    {
+                        <div class="stack" style="gap:10px;">
+                            @foreach (var h in a.History)
+                            {
+                                <div style="display:flex; gap:8px; align-items:flex-start;">
+                                    <div style="width:8px; height:8px; border-radius:50%; background:var(--signal-deep); margin-top:5px; flex-shrink:0;"></div>
+                                    <div>
+                                        <div style="font-weight:600; font-size:12.5px;">@h.EmployeeName</div>
+                                        <div class="cell-muted" style="font-size:11px;">
+                                            @h.AssignedUtc.ToLocalTime().ToString("d MMM yyyy")
+                                            —
+                                            @(h.ReturnedUtc is null ? "Current" : h.ReturnedUtc.Value.ToLocalTime().ToString("d MMM yyyy"))
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top:16px; justify-content:space-between;">
+            <div style="display:flex; gap:14px; align-items:center;">
+                @if (ViewData["CanManage"] is true)
+                {
+                    <form method="post" asp-page-handler="Service" style="margin:0;">
+                        <input type="hidden" name="assetId" value="@a.Id" />
+                        <button type="submit" class="linkish" style="font-size:12px;">Flag for service</button>
+                    </form>
+                }
+                @if (ViewData["CanRetire"] is true)
+                {
+                    <button type="button" class="linkish" style="font-size:12px;"
+                            data-modal="retireOrLost"
+                            data-assetid="@a.Id"
+                            data-tag="@a.Tag"
+                            data-brand="@a.Brand">Retire or report lost</button>
+                }
+            </div>
+            <div style="display:flex; gap:8px;">
+                @if (ViewData["CanManage"] is true)
+                {
+                    <button type="button" class="btn btn-outline btn-sm" data-modal="editAsset-@a.Id">Edit</button>
+                }
+                <button type="button" class="btn btn-outline btn-sm"
+                        data-modal="printLabel"
+                        data-tag="@a.Tag"
+                        data-brand="@a.Brand"
+                        data-category="@DisplayHelpers.Label(a.Category)">Print label</button>
+                <button type="button" class="btn btn-primary btn-sm" data-close-modal>Close</button>
+            </div>
+        </div>
+    </div>
+</div>
